@@ -59,7 +59,7 @@ while True:
             )
             fig.update_layout(mapbox_style="open-street-map")
             fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-            st.plotly_chart(fig, use_container_width=True, key="wildfire_map_viz")
+            st.plotly_chart(fig, use_container_width=True, key)
 
         # --- 6. DRONE HEALTH METRICS ---
         st.subheader("📊 Swarm Health Metrics")
