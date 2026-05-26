@@ -393,7 +393,7 @@ if not df_tel.empty:
         with c_term2:
             st.dataframe(df_tel, use_container_width=True)
 
-# --- 8. HYPER-SPEED AUTO-REFRESH ENGINE ---
+# --- 8. LIVE DEPLOYMENT OPTIMIZED REFRESH ---
 if not pause_sync:
-    time.sleep(3.5) # Reduced from 6 seconds for live-action drone deployment
+    time.sleep(5) # Set to exactly 5 seconds for smooth performance on Hugging Face
     st.rerun()
