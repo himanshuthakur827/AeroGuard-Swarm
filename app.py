@@ -131,7 +131,8 @@ with st.sidebar:
         st.session_state.auth = False
         st.rerun()
 
-# --- 6. DATA INGESTION ENGINE ---
+# --- 6. DATA INGESTION ENGINE (OPTIMIZED WITH CACHE) ---
+@st.cache_data(ttl=5)
 def fetch_telemetry():
     try:
         SUPABASE_URL = "https://cuvuetjghxhtrgevwacx.supabase.co"
@@ -152,7 +153,7 @@ def fetch_telemetry():
             })
         return pd.DataFrame(data)
 
-df_tel = fetch_telemetry()
+df_tel = fetch_telemetry().copy()
 df_tel['temperature'] = df_tel['temperature'] if unit_sys == "Metric" else (df_tel['temperature'] * 9/5) + 32
 
 # --- 7. MAIN DASHBOARD ---
@@ -292,7 +293,7 @@ if not df_tel.empty:
         with c_term2:
             st.dataframe(df_tel, use_container_width=True)
 
-# --- 9. AUTO-REFRESH ENGINE (RESPECTS PAUSE TOGGLE) ---
+# --- 9. AUTO-REFRESH ENGINE (OPTIMIZED TIMING) ---
 if not pause_sync:
-    time.sleep(2.5)
+    time.sleep(6) # 6 Second relax time to stop lag
     st.rerun()
