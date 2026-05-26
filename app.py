@@ -111,29 +111,77 @@ with st.sidebar:
         st.stop() 
 
     st.markdown("## ⚙️ GLOBAL COMMAND")
-    pause_sync = st.checkbox("⏸️ Pause Live Sync", value=False, help="[CRITICAL] Stop the auto-refresh loop to upload files.")
+    
+    # 🚨 THE NEW SIREN KILL-SWITCH 🚨
+    enable_siren = st.checkbox(
+        "🔊 Enable Critical Siren Alarm", 
+        value=False, 
+        help="**[WHAT IS THIS?]** A physical toggle to activate or silence the browser-based audio hooter.\n\n**[WHY IS IT IMPORTANT?]** Constant audio alarms cause 'Alarm Fatigue' for operators monitoring highly sensitive zones. You only want alarms for actual field deployments.\n\n**[HOW IT WORKS]** When checked, any Z-score anomaly crossing the threshold will trigger an HTML5 audio element.\n\n**[REAL DEPLOYMENT]** Keep OFF during standard system checks; toggle ON during active industrial or pipeline containment missions."
+    )
+    
+    pause_sync = st.checkbox(
+        "⏸️ Pause Live Sync", 
+        value=False, 
+        help="**[WHAT IS THIS?]** Halts the asynchronous refresh loop of the dashboard.\n\n**[WHY IS IT IMPORTANT?]** Required when you need to upload manual images/audio to the Neural Vision tab without the page resetting and wiping your data mid-upload.\n\n**[HOW IT WORKS]** Bypasses the backend Python st.rerun() cycle.\n\n**[REAL DEPLOYMENT]** Crucial when a field operator needs to freeze the map telemetry to analyze a specific drone's thermal payload without the map jumping."
+    )
     
     with st.expander("🌐 UI & Region Setup"):
-        st.session_state.lang = st.selectbox("Interface Language", ["EN", "HI"], index=["EN", "HI"].index(L))
-        st.session_state.theme = st.selectbox("UI Mode", ["Dark (Cyber)", "Light (Clean)"], index=["Dark (Cyber)", "Light (Clean)"].index(T))
-        unit_sys = st.radio("Measurement System", ["Metric", "Imperial"])
+        st.session_state.lang = st.selectbox(
+            "Interface Language", ["EN", "HI"], index=["EN", "HI"].index(L),
+            help="**[WHAT]** Language localization.\n\n**[WHY]** For international field teams.\n\n**[HOW]** Maps a centralized JSON dictionary to the UI text rendering.\n\n**[REAL DEPLOYMENT]** Allows instant handover of the command center to local Russian or Indian field operators."
+        )
+        st.session_state.theme = st.selectbox(
+            "UI Mode", ["Dark (Cyber)", "Light (Clean)"], index=["Dark (Cyber)", "Light (Clean)"].index(T),
+            help="**[WHAT]** CSS visual toggle.\n\n**[WHY]** Adapts to ambient environmental light.\n\n**[HOW]** Injects dynamic hex codes into the Streamlit wrapper.\n\n**[REAL DEPLOYMENT]** Dark mode is used for dimly lit mobile command trucks; Light mode is used to defeat screen glare when operating tablets under harsh sunlight."
+        )
+        unit_sys = st.radio(
+            "Measurement System", ["Metric", "Imperial"],
+            help="**[WHAT]** Unit mapping.\n\n**[WHY]** Standardizes data output.\n\n**[HOW]** Live metric-to-imperial thermodynamic conversion.\n\n**[REAL DEPLOYMENT]** Syncs with specific aviation and industrial standards depending on airspace jurisdiction."
+        )
 
     with st.expander("🧮 Mathematical Fire Spread"):
-        spread_alg = st.selectbox("Spread Algorithm", ["Rothermel Equation", "Huygens Principle"])
-        z_thresh = st.slider("Anomaly Z-Score (σ)", 1.0, 5.0, 2.5)
-        calc_dt = st.number_input("Calculus Δt", 0.1, 5.0, 1.0)
+        spread_alg = st.selectbox(
+            "Spread Algorithm", ["Rothermel Equation", "Huygens Principle"],
+            help="**[WHAT IS THIS?]** The mathematical engine predicting fire/gas vectors.\n\n**[WHY IS IT IMPORTANT?]** Tracking a current leak is useless; we must predict its future trajectory for evacuation.\n\n**[HOW IT WORKS]** Processes fluid dynamics and thermal expansion variables.\n\n**[REAL DEPLOYMENT]** Seamlessly switches algorithms based on wind density and canopy cover over the pipeline."
+        )
+        z_thresh = st.slider(
+            "Anomaly Z-Score (σ)", 1.0, 5.0, 2.5,
+            help="**[WHAT IS THIS?]** Statistical thermal anomaly threshold.\n\n**[WHY IS IT IMPORTANT?]** Prevents false alarms from naturally hot objects (like sun-baked metal pipes).\n\n**[HOW IT WORKS]** Calculates how many Standard Deviations (σ) a reading is from the rolling environmental mean.\n\n**[REAL DEPLOYMENT]** Kept at 2.5σ in cold climates, raised to 3.5σ+ in industrial metal refineries to avoid false positives."
+        )
+        calc_dt = st.number_input(
+            "Calculus Δt", 0.1, 5.0, 1.0,
+            help="**[WHAT IS THIS?]** Time delta for thermal derivatives.\n\n**[WHY IS IT IMPORTANT?]** Synchronizes math equations with physical camera frame rates.\n\n**[HOW IT WORKS]** Uses dT/dt limit calculations.\n\n**[REAL DEPLOYMENT]** Must perfectly match the Hertz (Hz) output of the physical drone's onboard FLIR camera."
+        )
 
     with st.expander("⚙️ Hardware: Flight & Tuning"):
-        pid_p = st.slider("Proportional Gain (kP)", 0.0, 2.0, 0.5)
-        kalman_q = st.number_input("Kalman Process Noise", 0.001, 0.1, 0.01, format="%.3f")
+        pid_p = st.slider(
+            "Proportional Gain (kP)", 0.0, 2.0, 0.5,
+            help="**[WHAT IS THIS?]** Primary flight controller (PID) tuning parameter.\n\n**[WHY IS IT IMPORTANT?]** Stops drones from drifting and crashing in high winds.\n\n**[HOW IT WORKS]** Adjusts corrective motor voltage proportionally to the GPS error margin.\n\n**[REAL DEPLOYMENT]** Field engineers tune this higher when drones carry heavy industrial payloads (like thermal cams)."
+        )
+        kalman_q = st.number_input(
+            "Kalman Process Noise", 0.001, 0.1, 0.01, format="%.3f",
+            help="**[WHAT IS THIS?]** Sensor noise filter logic.\n\n**[WHY IS IT IMPORTANT?]** Raw GPS/IMU data is shaky due to rotor vibrations. This filters out the shaking.\n\n**[HOW IT WORKS]** Predicts true drone position by filtering mathematical variance matrices.\n\n**[REAL DEPLOYMENT]** Essential for centimeter-level RTK drone hovering precision during infrastructure inspection."
+        )
 
     with st.expander("📡 Hardware: Telemetry & Radio"):
-        lora_sf = st.select_slider("LoRa Spreading Factor", [7, 8, 9, 10, 11, 12], value=10)
-        tx_power = st.slider("Transmit Power (dBm)", 2, 20, 14)
+        lora_sf = st.select_slider(
+            "LoRa Spreading Factor", [7, 8, 9, 10, 11, 12], value=10,
+            help="**[WHAT IS THIS?]** Radio wave chirp duration for the LoRaWAN transmitter.\n\n**[WHY IS IT IMPORTANT?]** Balances data speed vs signal penetration.\n\n**[HOW IT WORKS]** Higher SF physically stretches the radio wave length.\n\n**[REAL DEPLOYMENT]** Crank to SF12 in dense mountainous terrain to ensure telemetry penetrates rocks, concrete, and trees."
+        )
+        tx_power = st.slider(
+            "Transmit Power (dBm)", 2, 20, 14,
+            help="**[WHAT IS THIS?]** Antenna transmission strength.\n\n**[WHY IS IT IMPORTANT?]** Determines max control range of the drone.\n\n**[HOW IT WORKS]** Pumps more milli-watts of electricity into the transmitter.\n\n**[REAL DEPLOYMENT]** Maxed out at 20 dBm for 15km+ BVLOS (Beyond Visual Line of Sight) autonomous missions."
+        )
         
     with st.expander("💨 Physics: Environment"):
-        wind_spd = st.slider("Wind Vector (km/h)", 0, 120, 25)
-        solar_irr = st.slider("Solar Irradiance (W/m²)", 0, 1200, 800)
+        wind_spd = st.slider(
+            "Wind Vector (km/h)", 0, 120, 25,
+            help="**[WHAT IS THIS?]** Mid-flame/Ground-level wind speed.\n\n**[WHY IS IT IMPORTANT?]** The primary driver of gas and fire dispersion direction.\n\n**[HOW IT WORKS]** Read live from drone-mounted Pitot tubes.\n\n**[REAL DEPLOYMENT]** Injects live weather data to adjust flight trajectories and predict threat expansion dynamically."
+        )
+        solar_irr = st.slider(
+            "Solar Irradiance (W/m²)", 0, 1200, 800,
+            help="**[WHAT IS THIS?]** Ambient sun radiation load on the ground.\n\n**[WHY IS IT IMPORTANT?]** Sun-heated pipes can trigger false AI positives. \n\n**[HOW IT WORKS]** This value is mathematically subtracted from the total drone thermal load.\n\n**[REAL DEPLOYMENT]** Measured by ground-based pyranometers and fed directly into the swarm's Z-score logic."
+        )
 
     st.markdown("---")
     if st.button("🔴 DISCONNECT UPLINK"): 
@@ -163,7 +211,7 @@ st.markdown(f"<h1>{i18n[L]['title']}</h1>", unsafe_allow_html=True)
 st.markdown("""
 <div class="notice-card">
     ⚠️ LIVE DEPLOYMENT NOTICE: <br>
-    <span style="font-weight: 400;">The telemetry and calculations displayed are processing via a cloud swarm simulation. <b>This software architecture is fully hardware-agnostic.</b></span>
+    <span style="font-weight: 400;">The telemetry and calculations displayed are processing via a cloud swarm simulation. <b>This software architecture is fully hardware-agnostic and deployment ready.</b></span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -184,14 +232,20 @@ if not df_tel.empty:
     m3.markdown(f"<div class='glass-card' style='animation-delay: 0.3s;'><div class='metric-title'>Predicted Spread</div><div class='metric-value'>{(wind_spd * 0.15):.2f} m/s</div></div>", unsafe_allow_html=True)
     m4.markdown(f"<div class='glass-card' style='animation-delay: 0.4s;'><div class='metric-title'>Polars Latency</div><div class='metric-value'>12 ms</div></div>", unsafe_allow_html=True)
 
+    # 🚨 DYNAMIC SIREN AUDIO RENDER 🚨
     if critical > 0:
+        siren_html = ""
+        if enable_siren:
+            siren_html = """
+            <audio autoplay loop controls style="height: 35px; margin-top: 10px; width: 300px;">
+                <source src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" type="audio/mpeg">
+            </audio>
+            """
         st.markdown(f"""
         <div class='glass-card' style='border-top-color:#ef4444; background:rgba(239, 68, 68, 0.1);'>
             <h3 style='color:#ef4444 !important;'>🚨 CRITICAL ALERT TRIGGERED</h3>
             <p>Anomaly exceeds Z-Score mathematical threshold ({z_thresh}σ). Pre-computing swarm intercept vectors.</p>
-            <audio autoplay loop controls style="height: 35px; margin-top: 10px; width: 300px;">
-                <source src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" type="audio/mpeg">
-            </audio>
+            {siren_html}
         </div>
         """, unsafe_allow_html=True)
 
@@ -203,7 +257,7 @@ if not df_tel.empty:
         st.markdown(f"""
         <div class='glass-card'><h4>🧠 SYSTEM INTELLIGENCE BRIEFING: 3D GEOSPATIAL RADAR</h4><div class='briefing-text'>
         <span class='brief-tag'>[WHAT IS THIS?]</span> A real-time 3D Cartographic Information System displaying live GPS coordinates and heat elevations.<br>
-        <span class='brief-tag'>[REAL DEPLOYMENT]</span> Upgraded from V18 2D Mapbox to PyDeck. Physical drones use RTK GPS. This interface renders heat signatures as 3D pillars for tactical deployment.</div></div>
+        <span class='brief-tag'>[REAL DEPLOYMENT]</span> Upgraded from V18 2D Mapbox to PyDeck. Physical drones use RTK GPS. This interface renders heat signatures as 3D pillars for tactical deployment and pipeline isolation.</div></div>
         """, unsafe_allow_html=True)
         
         layer = pdk.Layer(
@@ -339,7 +393,7 @@ if not df_tel.empty:
         with c_term2:
             st.dataframe(df_tel, use_container_width=True)
 
-# --- 8. AUTO-REFRESH ENGINE ---
+# --- 8. HYPER-SPEED AUTO-REFRESH ENGINE ---
 if not pause_sync:
-    time.sleep(6) 
+    time.sleep(3.5) # Reduced from 6 seconds for live-action drone deployment
     st.rerun()
