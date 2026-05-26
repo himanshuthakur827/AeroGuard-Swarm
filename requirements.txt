@@ -9,7 +9,3 @@ scipy
 ultralytics
 easyocr
 Pillow
-transformers
-networkx
-librosa
-xgboost
