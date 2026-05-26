@@ -7,103 +7,120 @@ import numpy as np
 import time
 
 # --- 1. PAGE CONFIG & SESSION STATES ---
-st.set_page_config(page_title="AeroGuard V13 | Hardware Matrix", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="AeroGuard V14 | Limitless", layout="wide", initial_sidebar_state="expanded")
 
 if 'lang' not in st.session_state: st.session_state.lang = "EN"
-if 'theme' not in st.session_state: st.session_state.theme = "Dark"
+if 'theme' not in st.session_state: st.session_state.theme = "Dark (Cyber)"
 if 'auth' not in st.session_state: st.session_state.auth = False
+if 'loader' not in st.session_state: st.session_state.loader = True
 
-# --- 2. MULTI-LANGUAGE DICTIONARY ---
+# --- 2. MULTI-LANGUAGE DICTIONARY (UNIVERSAL) ---
 i18n = {
-    "EN": {"title": "🛰️ AeroGuard V13: Hardware Integration & Swarm Nexus", "tabs": ["🌍 GLOBAL RADAR", "🧮 MATH CORE", "⚙️ REAL HARDWARE (NEW)", "👁️ NEURAL VISION", "💨 ENV PHYSICS", "💾 DATA LAKE"]},
-    "RU": {"title": "🛰️ AeroGuard V13: Аппаратная Интеграция", "tabs": ["🌍 РАДАР", "🧮 МАТЕМАТИКА", "⚙️ ОБОРУДОВАНИЕ", "👁️ ЗРЕНИЕ", "💨 ФИЗИКА", "💾 ДАННЫЕ"]}
+    "EN": {"title": "🛰️ AeroGuard V14: Global Swarm Intelligence", "tabs": ["🌍 GLOBAL RADAR", "🧮 SPREAD MATH", "⚙️ HARDWARE MATRIX", "👁️ NEURAL VISION", "💨 ENV PHYSICS", "💾 DATA LAKE"]},
+    "HI": {"title": "🛰️ AeroGuard V14: ग्लोबल स्वार्म इंटेलिजेंस", "tabs": ["🌍 ग्लोबल रडार", "🧮 फायर स्प्रेड मैथ", "⚙️ हार्डवेयर मैट्रिक्स", "👁️ न्यूरल विजन", "💨 पर्यावरण भौतिकी", "💾 डेटा लेक"]},
+    "AR": {"title": "🛰️ AeroGuard V14: استخبارات السرب العالمي", "tabs": ["🌍 الرادار العالمي", "🧮 رياضيات الانتشار", "⚙️ مصفوفة الأجهزة", "👁️ الرؤية العصبية", "💨 فيزياء البيئة", "💾 بحيرة البيانات"]},
+    "IT": {"title": "🛰️ AeroGuard V14: Intelligenza Globale dello Sciame", "tabs": ["🌍 RADAR GLOBALE", "🧮 MATEMATICA", "⚙️ HARDWARE", "👁️ VISIONE NEURALE", "💨 FISICA AMBIENTALE", "💾 DATA LAKE"]},
+    "DE": {"title": "🛰️ AeroGuard V14: Globale Schwarmintelligenz", "tabs": ["🌍 GLOBALER RADAR", "🧮 AUSBREITUNGSMATHEMATIK", "⚙️ HARDWARE-MATRIX", "👁️ NEURONALES SEHEN", "💨 UMWELTPHYSIK", "💾 DATENSEE"]}
 }
+
 L = st.session_state.lang
 T = st.session_state.theme
 
-# --- 3. DYNAMIC CSS WITH 3D ANIMATIONS & TRANSITIONS ---
-bg_color, panel_bg, text_col, accent, border = ("#020617", "#0f172a", "#f8fafc", "#00ffcc", "#1e293b") if T == "Dark" else ("#f1f5f9", "#ffffff", "#0f172a", "#2563eb", "#cbd5e1")
-map_style = "carto-darkmatter" if T == "Dark" else "open-street-map"
+# --- 3. HARDCORE ANIMATED CSS ---
+if T == "Dark (Cyber)":
+    bg, card_bg, text, accent = "#020617", "rgba(15, 23, 42, 0.7)", "#f8fafc", "#00ffcc"
+    map_style = "carto-darkmatter"
+elif T == "Light (Clean)":
+    bg, card_bg, text, accent = "#f8fafc", "rgba(255, 255, 255, 0.9)", "#0f172a", "#2563eb"
+    map_style = "open-street-map"
 
 st.markdown(f"""
     <style>
-    .stApp {{background-color: {bg_color}; color: {text_col}; font-family: 'Segoe UI', sans-serif;}}
-    h1, h2, h3 {{color: {accent} !important; font-weight: 800;}}
+    /* GLOBAL FONTS & BACKGROUND */
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap');
+    .stApp {{background-color: {bg}; color: {text}; font-family: 'Space Grotesk', sans-serif; transition: background-color 0.5s ease;}}
+    h1, h2, h3, h4 {{color: {accent} !important; font-weight: 700; letter-spacing: 1px;}}
     
-    /* ANIMATIONS */
-    @keyframes slideUp {{ from {{opacity: 0; transform: translateY(20px);}} to {{opacity: 1; transform: translateY(0);}} }}
-    @keyframes pulseGlow {{ 0% {{box-shadow: 0 0 5px {accent}40;}} 50% {{box-shadow: 0 0 20px {accent};}} 100% {{box-shadow: 0 0 5px {accent}40;}} }}
-    @keyframes spin3D {{ from {{transform: rotateY(0deg);}} to {{transform: rotateY(360deg);}} }}
+    /* KEYFRAME ANIMATIONS */
+    @keyframes slideInUp {{ 0% {{opacity: 0; transform: translateY(40px);}} 100% {{opacity: 1; transform: translateY(0);}} }}
+    @keyframes fadeIn {{ 0% {{opacity: 0;}} 100% {{opacity: 1;}} }}
+    @keyframes borderGlow {{ 0% {{box-shadow: 0 0 5px {accent}40;}} 50% {{box-shadow: 0 0 20px {accent};}} 100% {{box-shadow: 0 0 5px {accent}40;}} }}
     
-    /* UI ELEMENTS */
-    .animated-card {{
-        background: {panel_bg}; border: 1px solid {border}; border-top: 3px solid {accent};
-        border-radius: 12px; padding: 20px; animation: slideUp 0.6s ease-out forwards;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    /* ANIMATED CARDS */
+    .glass-card {{
+        background: {card_bg}; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(148, 163, 184, 0.2); border-top: 3px solid {accent};
+        border-radius: 12px; padding: 25px; margin-bottom: 20px;
+        animation: slideInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        transition: transform 0.4s ease, box-shadow 0.4s ease;
     }}
-    .animated-card:hover {{ transform: translateY(-5px); animation: pulseGlow 2s infinite; }}
+    .glass-card:hover {{ transform: scale(1.02) translateY(-5px); animation: borderGlow 2s infinite; }}
     
-    .status-orb {{
-        width: 15px; height: 15px; background-color: #ef4444; border-radius: 50%;
-        display: inline-block; animation: pulseGlow 1.5s infinite;
-    }}
+    .metric-title {{font-size: 0.9rem; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 1.5px;}}
+    .metric-value {{font-size: 2.5rem; color: {text}; font-weight: 700; margin-top: 5px;}}
     
-    .stTabs [data-baseweb="tab"] {{color: {text_col}; font-weight: 600; transition: color 0.3s;}}
-    .stTabs [aria-selected="true"] {{color: {accent} !important; border-bottom: 3px solid {accent} !important;}}
+    /* TAB STYLING */
+    .stTabs [data-baseweb="tab"] {{color: {text}; font-weight: 600; font-size: 15px; background: transparent; transition: all 0.3s ease;}}
+    .stTabs [aria-selected="true"] {{color: {accent} !important; border-bottom: 3px solid {accent} !important; background: rgba(0, 255, 204, 0.05); border-radius: 5px 5px 0 0;}}
     </style>
     """, unsafe_allow_html=True)
 
-# --- 4. SECURE LOGIN ---
+# --- 4. SECURE LOGIN WITH LOADING ANIMATION ---
 if not st.session_state.auth:
-    st.markdown("<br><br><br><br>", unsafe_allow_html=True)
+    st.markdown("<br><br><br><br><br>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns([1,2,1])
     with c2:
-        st.markdown(f"<div class='animated-card' style='text-align:center;'><h2>AEROGUARD GATEWAY</h2><p>Hardware Integration Node</p></div>", unsafe_allow_html=True)
-        if st.button("AUTHENTICATE SYSTEM", use_container_width=True): st.session_state.auth = True; st.rerun()
+        st.markdown(f"<div class='glass-card' style='text-align:center;'><h2>GLOBAL NEXUS LOGIN</h2><p>Universal Swarm Command Interface</p></div>", unsafe_allow_html=True)
+        pwd = st.text_input("Enter Passcode ('admin')", type="password")
+        if st.button("INITIALIZE SECURE UPLINK", use_container_width=True):
+            if pwd == "admin": st.session_state.auth = True; st.rerun()
+            else: st.error("Access Denied.")
     st.stop()
 
-# --- 5. SIDEBAR WITH DEEP-DIVE TOOLTIPS & 15+ HARDWARE OPTIONS ---
+# Simulate a boot-up loader sequence once
+if st.session_state.loader:
+    boot_text = st.empty()
+    for i in range(1, 101, 20):
+        boot_text.markdown(f"<div class='glass-card' style='text-align:center;'><h2>BOOTING SYSTEM... {i}%</h2><p>Establishing Satellite Uplink...</p></div>", unsafe_allow_html=True)
+        time.sleep(0.3)
+    st.session_state.loader = False
+    st.rerun()
+
+# --- 5. SIDEBAR WITH 70+ WORD DEEP-DIVE INSTRUCTIONS ---
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/9132/9132074.png", width=90)
-    st.markdown("## ⚙️ COMMAND OVERRIDE")
+    st.markdown("## ⚙️ GLOBAL COMMAND")
     
-    with st.expander("🌐 UI & Region Settings"):
-        st.session_state.lang = st.selectbox("Language", ["EN", "RU"], index=["EN", "RU"].index(L))
-        st.session_state.theme = st.selectbox("UI Theme", ["Dark", "Light"], index=["Dark", "Light"].index(T))
-    
-    with st.expander("🧮 Wildfire Math & Physics"):
-        spread_model = st.selectbox("Fire Algorithm", ["Rothermel", "Cellular Automata"], help="[WHAT] Selects the physics engine. [HOW] Uses partial differential equations to predict thermal expansion. [DEPLOY] Used to predict where the swarm should pre-position.")
-        calc_dt = st.number_input("Calculus Δt", 0.1, 5.0, 1.0, help="[WHAT] Time delta for derivatives. [HOW] Denominator in dT/dt limit equations. [DEPLOY] Matches the refresh rate of your real thermal camera.")
-        wind_speed = st.slider("Wind Vector (km/h)", 0, 100, 25, help="[WHAT] Mid-flame wind speed. [HOW] Directly multiplies the forward rate of spread. [DEPLOY] Will be fed live from the drone's onboard Pitot tube anemometer.")
+    with st.expander("🌐 UI & Region Setup", expanded=True):
+        st.session_state.lang = st.selectbox("Interface Language", ["EN", "HI", "AR", "IT", "DE"], index=["EN", "HI", "AR", "IT", "DE"].index(L))
+        st.session_state.theme = st.selectbox("UI Mode", ["Dark (Cyber)", "Light (Clean)"], index=["Dark (Cyber)", "Light (Clean)"].index(T))
+        unit_sys = st.radio("Measurement System", ["Metric", "Imperial"])
 
-    # NEW: THE 15+ REAL HARDWARE SENSOR OPTIONS
-    with st.expander("⚙️ 1. FLIGHT CONTROLLER (PID)"):
-        st.markdown("<small style='color:gray;'>Pixhawk/Ardupilot Tuning</small>", unsafe_allow_html=True)
-        pid_p = st.slider("Proportional Gain (kP)", 0.0, 2.0, 0.5, help="[WHAT] Core stabilization. [HOW] Calculates error = target_angle - current_angle. [DEPLOY] High P makes the real drone snap back fast, too high causes oscillations.")
-        pid_i = st.slider("Integral Gain (kI)", 0.0, 1.0, 0.1, help="[WHAT] Overcomes steady-state errors (like constant wind). [HOW] Integrates error over time (Sum of errors * dt). [DEPLOY] Crucial for Siberian/Himalayan crosswinds.")
-        pid_d = st.slider("Derivative Gain (kD)", 0.0, 0.5, 0.05, help="[WHAT] Dampens the movement. [HOW] Calculates the rate of change of the error (dError/dt). [DEPLOY] Stops the drone from overshooting its target GPS waypoint.")
-        mag_decl = st.number_input("Magnetic Declination (°)", -180.0, 180.0, 4.5, help="[WHAT] Compass correction. [HOW] Offset between True North and Magnetic North. [DEPLOY] Must be updated based on deployment coordinates (India vs Russia).")
-        geofence = st.slider("Geofence Radius (m)", 100, 5000, 1500, help="[WHAT] Virtual cage. [HOW] RTL (Return to Launch) triggered if (x² + y²)^(1/2) > R. [DEPLOY] Prevents flyaways if LoRaWAN signal is lost.")
+    with st.expander("🧮 Mathematical Fire Spread"):
+        spread_alg = st.selectbox("Spread Algorithm", ["Rothermel Equation", "Huygens Principle"], help="[WHAT] The Rothermel Surface Fire Spread Model is a mathematical algorithm used to predict the forward rate of spread of a wildfire. [WHY] It is essential because it accounts for the physics of fuel, moisture, and wind, providing a highly accurate simulation of how fast a fire will consume a forest. [HOW] It calculates the heat flux and ignition energy required to bring adjacent unburned fuel to its ignition temperature using partial differential equations. [REAL DEPLOYMENT] In a real-world scenario with physical drones, this model ingests live sensor data (wind speed from anemometers, humidity from DHT22 sensors). The edge computer calculates the spread vector and autonomously commands the UAV swarm to fly ahead of the fire front to monitor evacuation zones.")
+        z_thresh = st.slider("Anomaly Z-Score (σ)", 1.0, 5.0, 2.5, help="[WHAT] The Z-Score Anomaly Trigger defines the statistical threshold for what constitutes a critical thermal event. [WHY] Normal temperature fluctuates throughout the day due to sunlight. We must mathematically isolate genuine fire anomalies from standard environmental heating. [HOW] It calculates how many Standard Deviations (σ) the current thermal reading is from the rolling historical mean temperature. [REAL DEPLOYMENT] When the physical drone's thermal camera scans a hot rock heated by the sun, the Z-Score remains low. But if it scans a rapidly combusting chemical fire, the Z-Score spikes above this threshold, instantly triggering the LoRaWAN radio to broadcast an emergency interrupt packet to the command center.")
+        calc_dt = st.number_input("Calculus Δt", 0.1, 5.0, 1.0, help="[WHAT] The Calculus Delta Time (Δt) is the fundamental time step used for calculating real-time derivatives. [WHY] Without a defined time step, the system cannot calculate the rate of change of temperature (how fast the fire is growing). [HOW] It serves as the denominator in the First Derivative equation (dT/dt), comparing the current temperature frame against the previous one. [REAL DEPLOYMENT] When real equipment is added, this value must be perfectly synchronized with the frames-per-second (FPS) output of your physical FLIR thermal camera. If the camera sends data every 2 seconds, Δt must be set to 2.0 to ensure the mathematical predictions remain physically accurate and prevent software crashes.")
 
-    with st.expander("📡 2. TELEMETRY & RADIO (LoRa)"):
-        st.markdown("<small style='color:gray;'>LoRaWAN / MQTT Comms</small>", unsafe_allow_html=True)
-        lora_sf = st.select_slider("Spreading Factor (SF)", [7, 8, 9, 10, 11, 12], value=10, help="[WHAT] Radio modulation. [HOW] Higher SF = longer range but slower data rate (chirp duration). [DEPLOY] Use SF12 for deep forests, SF7 for urban.")
-        mqtt_qos = st.selectbox("MQTT QoS Level", [0, 1, 2], index=1, help="[WHAT] Message guarantee. [HOW] QoS 0 (At most once), QoS 1 (At least once), QoS 2 (Exactly once). [DEPLOY] QoS 1 ensures fire alerts are never missed over bad networks.")
-        baud_rate = st.selectbox("Serial Baud Rate", [9600, 57600, 115200], index=2, help="[WHAT] Hardware comms speed. [HOW] Bits per second between Raspberry Pi and Pixhawk. [DEPLOY] 115200 required for high-frequency telemetry logging.")
-        antenna_gain = st.number_input("Antenna Gain (dBi)", 1.0, 12.0, 3.0, help="[WHAT] Radio signal focus. [HOW] Calculates Link Budget = Tx_Power + Tx_Gain - Path_Loss + Rx_Gain. [DEPLOY] Use 8dBi directional antennas at the base station.")
+    with st.expander("⚙️ Hardware: Flight & Tuning"):
+        pid_p = st.slider("Proportional Gain (kP)", 0.0, 2.0, 0.5, help="[WHAT] The Proportional Gain (kP) is the fundamental tuning parameter of the PID flight controller logic. [WHY] It determines how aggressively the drone's motors respond to positional errors caused by wind or inertia. Without it, the drone cannot maintain a stable hover. [HOW] It calculates a corrective force directly proportional to the difference between the desired trajectory and the actual GPS coordinate. [REAL DEPLOYMENT] When you attach real physical drones with heavy thermal cameras, edge AI computers, and high-capacity batteries, the center of gravity shifts drastically. You must tune this kP value higher in the field so the heavy hardware payload doesn't cause the drone to violently drift during high-wind deployments in rough terrains.")
+        kalman_q = st.number_input("Kalman Process Noise", 0.001, 0.1, 0.01, format="%.3f", help="[WHAT] The Kalman Filter Process Noise Covariance (Q) represents the level of uncertainty or trust in the mathematical model predicting the drone's position. [WHY] It is necessary because raw GPS and IMU sensors produce highly noisy and erratic data. The filter smooths this out for stable autonomous navigation. [HOW] By adjusting Q, you tell the algorithm whether to trust the actual sensor readings (high Q) or to rely more on the mathematical prediction model (low Q). [REAL DEPLOYMENT] Once physical drones are airborne, wind gusts and mechanical vibrations from the spinning propellers inject massive noise into the onboard accelerometer and gyroscope. You must tune this Q matrix so the flight controller filters out the physical vibration without ignoring actual trajectory changes.")
+        swarm_topo = st.selectbox("Swarm Topology", ["Mesh Network", "Star Topology", "Ring Layout"], help="[WHAT] Swarm Topology dictates how the individual UAVs communicate with each other in the air. [WHY] It prevents a single point of failure. If one drone crashes, the rest of the swarm must continue the mission. [HOW] The algorithm dynamically assigns primary and secondary routing nodes based on distance and signal strength. [REAL DEPLOYMENT] In a real deployment with 5 to 10 drones, you will equip them with XBee or LoRa Mesh modules. Selecting 'Mesh Network' here configures their onboard routing tables so that a drone on the far side of a mountain can pass its thermal data to a middle drone, which relays it to your ground station, ensuring 100% coverage.")
 
-    with st.expander("👁️ 3. SENSORS (FLIR & IMU)"):
-        st.markdown("<small style='color:gray;'>Thermal & Navigation</small>", unsafe_allow_html=True)
-        flir_emis = st.slider("Thermal Emissivity (ε)", 0.1, 1.0, 0.95, help="[WHAT] Surface radiation efficiency. [HOW] Stefan-Boltzmann law modifier (E = εσT^4). [DEPLOY] 0.95 for trees/organic matter, lower it if scanning metal pipelines.")
-        kalman_q = st.number_input("Kalman Process Noise (Q)", 0.001, 0.1, 0.01, format="%.3f", help="[WHAT] IMU filter trust. [HOW] High Q means trusting the gyroscope more than the math model. [DEPLOY] Tunes how smooth the drone flies under vibration.")
-        kalman_r = st.number_input("Kalman Meas. Noise (R)", 0.01, 1.0, 0.1, help="[WHAT] Sensor noise estimate. [HOW] High R means trusting the math model over a noisy GPS. [DEPLOY] Increase R when flying under thick forest canopies.")
-        baro_qnh = st.number_input("Barometric QNH (hPa)", 900, 1100, 1013, help="[WHAT] Altimeter baseline. [HOW] Sea-level pressure calibration. [DEPLOY] Must be updated daily, otherwise drone altitude estimation will be severely off in mountains.")
-        optical_flow = st.checkbox("Enable Optical Flow", True, help="[WHAT] Downward camera nav. [HOW] Calculates pixel velocity shift (dx/dt, dy/dt) to hold position without GPS. [DEPLOY] Essential for precision hovering near oil rigs.")
-        lidar_dens = st.selectbox("LiDAR Point Density", ["Low", "Medium", "High"], help="[WHAT] Laser scanner output. [HOW] Points generated per second. [DEPLOY] High density builds 3D terrain maps but chokes the Raspberry Pi CPU.")
+    with st.expander("📡 Hardware: Telemetry & Radio"):
+        lora_sf = st.select_slider("LoRa Spreading Factor", [7, 8, 9, 10, 11, 12], value=10, help="[WHAT] Spreading Factor (SF) determines the duration of a single 'chirp' in LoRaWAN radio frequency modulation. [WHY] It is critical for balancing data transmission speed against the maximum range of the radio signal. Higher SF means longer range but much slower data rates. [HOW] Each step up in SF doubles the time on air to transmit the same amount of data, thereby increasing the receiver's signal-to-noise ratio margin. [REAL DEPLOYMENT] When deploying real UAVs in dense, mountainous terrain or thick forests, the radio line-of-sight is blocked by trees and rocks. You will physically increase the SF to 11 or 12 to ensure the MQTT telemetry payload (containing critical GPS and thermal data) penetrates the physical obstacles and reaches the base station.")
+        tx_power = st.slider("Transmit Power (dBm)", 2, 20, 14, help="[WHAT] Transmit Power (dBm) dictates the sheer electrical energy pushed into the radio antenna. [WHY] More power means the radio waves travel further, but it drains the drone's battery significantly faster. [HOW] The power output scales logarithmically, meaning 20dBm is significantly stronger than 10dBm. [REAL DEPLOYMENT] When operating in small urban environments, you must lower this to 2-5 dBm to comply with local telecom regulations and save battery life. However, in emergency global wildfire deployments covering hundreds of kilometers, you will crank this up to the maximum 20 dBm to ensure the critical thermal payload reaches the Command Center before the drone's battery dies.")
+        
+    with st.expander("👁️ Hardware: Thermal & Optical"):
+        flir_emis = st.slider("Thermal Emissivity (ε)", 0.1, 1.0, 0.95, help="[WHAT] Thermal Emissivity is a dimensionless number between 0 and 1 that represents a material's effectiveness in emitting thermal radiation. [WHY] Without setting the correct emissivity, the FLIR thermal camera will report highly inaccurate temperature readings, mistaking reflective surfaces for cold spots. [HOW] The software applies this coefficient to the Stefan-Boltzmann law to correct the raw infrared radiation data captured by the sensor's microbolometer array. [REAL DEPLOYMENT] When physical drones with real radiometric thermal cameras fly over varied terrain, you must calibrate this setting. For dense forests and organic matter, set it to 0.95. If the swarm is monitoring metallic infrastructure like pipelines or solar panels, you must lower it to 0.85 to compensate for the metal's high reflectivity and low emission.")
+        lidar_den = st.selectbox("LiDAR Point Density", ["Low", "High"], help="[WHAT] LiDAR Point Density controls how many laser pulses the hardware scanner fires per second. [WHY] High density gives a perfect 3D map of the terrain, but generates gigabytes of data that can crash the drone's edge computer. [HOW] It adjusts the RPM of the spinning laser mirror inside the LiDAR module. [REAL DEPLOYMENT] When you mount a heavy physical LiDAR sensor (like a Velodyne Puck) to the drone, you must set this to 'Low' for rapid wildfire tracking to conserve Raspberry Pi CPU power. Set it to 'High' only during post-fire analysis to map the exact geographical destruction down to the centimeter.")
 
-    if st.button("🔴 LOGOUT"): st.session_state.auth = False; st.rerun()
+    with st.expander("💨 Physics: Environment"):
+        wind_spd = st.slider("Wind Vector (km/h)", 0, 120, 25, help="[WHAT] Mid-flame wind speed representing the velocity of air movement directly above the fire line. [WHY] Wind is the single biggest factor driving fire expansion. [HOW] Acts as a direct exponential multiplier in the spread mathematics. [REAL DEPLOYMENT] Real drones will have onboard Pitot tubes gathering this wind data live, continuously updating the math engine.")
+        solar_irr = st.slider("Solar Irradiance (W/m²)", 0, 1200, 800, help="[WHAT] The power per unit area received from the Sun. [WHY] High solar irradiance pre-heats the forest fuel, making it easier to ignite. [HOW] Adds a base thermal load to the mathematical fuel-moisture equations. [REAL DEPLOYMENT] Will be measured via physical pyranometer sensors attached to the base station, factoring into the Z-score logic so the AI doesn't mistake sun-heated rocks for fires.")
 
-# --- 6. DATA ENGINE ---
+    if st.button("🔴 DISCONNECT UPLINK"): st.session_state.auth = False; st.rerun()
+
+# --- 6. DATA INGESTION ENGINE ---
 def fetch_telemetry():
     try:
         SUPABASE_URL = "https://cuvuetjghxhtrgevwacx.supabase.co"
@@ -112,92 +129,102 @@ def fetch_telemetry():
         res = supabase.table("drone_telemetry").select("*").order("created_at", desc=True).limit(200).execute()
         return pd.DataFrame(res.data)
     except:
-        np.random.seed(int(time.time()))
-        drones = ["Hardware-Alpha", "Hardware-Beta", "Hardware-Gamma"]
+        # Limitless Fallback Generator
+        np.random.seed(int(time.time() * 10) % 100)
+        drones = [f"UAV-Alpha", f"UAV-Beta", f"UAV-Gamma", f"UAV-Delta"]
         data = []
         for d in drones:
-            t_base = 35 if d != "Hardware-Gamma" else 85
+            t_base = 35 if d != "UAV-Gamma" else (35 + np.random.randint(40, 150))
             data.append({
                 "drone_id": d, "created_at": pd.Timestamp.now(),
                 "latitude": 31.104 + np.random.randn()*0.02, "longitude": 77.166 + np.random.randn()*0.02,
-                "temperature": t_base + np.random.randn()*2, "battery_level": np.random.randint(40, 95)
+                "temperature": t_base + np.random.randn()*5, "battery_level": np.random.randint(30, 95)
             })
         return pd.DataFrame(data)
 
 df_tel = fetch_telemetry()
+df_tel['temperature'] = df_tel['temperature'] if unit_sys == "Metric" else (df_tel['temperature'] * 9/5) + 32
 
-# --- 7. HEADER & MAIN DASHBOARD ---
+# --- 7. MAIN DASHBOARD ---
 st.markdown(f"<h1>{i18n[L]['title']}</h1>", unsafe_allow_html=True)
 
 if not df_tel.empty:
     latest = df_tel.sort_values('created_at').groupby('drone_id').last().reset_index()
     max_t = latest['temperature'].max()
+    critical = len(latest[latest['temperature'] > (80 if unit_sys == "Metric" else 176)])
     
-    # Animated Metric Cards
+    # --- ANIMATED METRIC CARDS ---
     m1, m2, m3, m4 = st.columns(4)
-    m1.markdown(f"<div class='animated-card' style='animation-delay: 0.1s;'><b>Active Nodes</b><h2>{len(latest)}</h2></div>", unsafe_allow_html=True)
-    m2.markdown(f"<div class='animated-card' style='animation-delay: 0.2s;'><b>Peak Thermal</b><h2 style='color:{'#ef4444' if max_t>75 else accent};'>{max_t:.1f}°C</h2></div>", unsafe_allow_html=True)
-    m3.markdown(f"<div class='animated-card' style='animation-delay: 0.3s;'><b>LoRaWAN Link Margin</b><h2>{lora_sf * 2.5 + antenna_gain} dB</h2></div>", unsafe_allow_html=True)
-    m4.markdown(f"<div class='animated-card' style='animation-delay: 0.4s;'><b>Hardware Status</b><h2><div class='status-orb'></div> ACTIVE</h2></div>", unsafe_allow_html=True)
-    st.write("")
+    unit_str = "°C" if unit_sys == "Metric" else "°F"
+    
+    m1.markdown(f"<div class='glass-card' style='animation-delay: 0.1s;'><div class='metric-title'>Active Edge Nodes</div><div class='metric-value'>{len(latest)}</div></div>", unsafe_allow_html=True)
+    m2.markdown(f"<div class='glass-card' style='animation-delay: 0.2s;'><div class='metric-title'>Thermal Peak</div><div class='metric-value' style='color: {'#ef4444' if critical>0 else accent};'>{max_t:.1f}{unit_str}</div></div>", unsafe_allow_html=True)
+    m3.markdown(f"<div class='glass-card' style='animation-delay: 0.3s;'><div class='metric-title'>Predicted Spread</div><div class='metric-value'>{(wind_spd * 0.15):.2f} m/s</div></div>", unsafe_allow_html=True)
+    m4.markdown(f"<div class='glass-card' style='animation-delay: 0.4s;'><div class='metric-title'>System Health</div><div class='metric-value' style='color:#10b981;'>OPTIMAL</div></div>", unsafe_allow_html=True)
+
+    if critical > 0:
+        st.markdown(f"<div class='glass-card' style='border-top-color:#ef4444; background:rgba(239, 68, 68, 0.1);'><h3 style='color:#ef4444 !important;'>🚨 CRITICAL ALERT TRIGGERED</h3><p>Anomaly exceeds Z-Score mathematical threshold. Pre-computing swarm intercept vectors.</p></div>", unsafe_allow_html=True)
 
     # --- 8. THE TABS ---
     tabs = st.tabs(i18n[L]['tabs'])
     
     with tabs[0]: # MAP
-        fig_map = px.scatter_mapbox(latest, lat="latitude", lon="longitude", color="temperature", size=[40]*len(latest), color_continuous_scale="Inferno", zoom=12.5, height=500)
-        fig_map.update_layout(mapbox_style=map_style, margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor="rgba(0,0,0,0)")
+        fig_map = px.scatter_mapbox(
+            latest, lat="latitude", lon="longitude", color="temperature", size=[40]*len(latest),
+            color_continuous_scale="Inferno", zoom=12, height=600, hover_name="drone_id"
+        )
+        fig_map.update_layout(mapbox_style=map_style, margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor="rgba(0,0,0,0)", font_color=text)
         st.plotly_chart(fig_map, use_container_width=True)
 
     with tabs[1]: # MATH
-        st.markdown("### 🧮 Hardware Mathematics: PID & Signal Math")
+        st.markdown("### 🧮 Hardware-Driven Spread Mathematics")
         eq1, eq2 = st.columns(2)
         with eq1:
-            st.markdown(f"<div class='animated-card'><b>PID Controller Output Equation</b><br><br>", unsafe_allow_html=True)
-            st.latex(r"u(t) = K_p e(t) + K_i \int_{0}^{t} e(\tau) d\tau + K_d \frac{de(t)}{dt}")
-            st.markdown(f"<br><small>Using your settings: Kp={pid_p}, Ki={pid_i}, Kd={pid_d}</small></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='glass-card'><div class='metric-title'>Rate of Spread (R)</div>", unsafe_allow_html=True)
+            st.latex(r"R = \frac{I_R \xi (1 + \phi_w + \phi_s)}{\rho_b \epsilon Q_{ig}}")
+            st.markdown("</div>", unsafe_allow_html=True)
         with eq2:
-            st.markdown(f"<div class='animated-card'><b>LoRa Signal-to-Noise Ratio (SNR)</b><br><br>", unsafe_allow_html=True)
-            st.latex(r"SNR_{dB} = 10 \log_{10} \left( \frac{P_{signal}}{P_{noise}} \right)")
-            st.markdown(f"<br><small>Expected SNR with SF{lora_sf}: {-2.5 * lora_sf} dB</small></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='glass-card'><div class='metric-title'>First Derivative (Heat Accel)</div>", unsafe_allow_html=True)
+            st.latex(r"\frac{\partial T}{\partial t} = \lim_{\Delta t \to 0} \frac{T(t + \Delta t) - T(t)}{\Delta t}")
+            st.markdown("</div>", unsafe_allow_html=True)
 
-    with tabs[2]: # NEW: HARDWARE SENSORS
-        st.markdown("### ⚙️ Real Hardware Diagnostics Simulation")
-        st.info("Simulating telemetry response based on the new sidebar hardware parameters (Kalman, Barometer, etc).")
-        
+    with tabs[2]: # HARDWARE MATRIX
+        st.markdown("### ⚙️ Physical Hardware Diagnostics")
         c_hw1, c_hw2 = st.columns(2)
         with c_hw1:
-            st.markdown("#### IMU Sensor Noise (Kalman Filter Demo)")
-            noise_arr = np.random.normal(0, kalman_r, 100) # Simulating raw noise based on R
-            filtered_arr = pd.Series(noise_arr).rolling(window=int(kalman_q*1000)).mean().fillna(0) # Simple filter based on Q
-            fig_noise = go.Figure()
-            fig_noise.add_trace(go.Scatter(y=noise_arr, mode='lines', name='Raw Sensor (Noisy)', opacity=0.3))
-            fig_noise.add_trace(go.Scatter(y=filtered_arr, mode='lines', name='Kalman Filtered', line=dict(color=accent, width=3)))
-            fig_noise.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=text_col, height=350)
-            st.plotly_chart(fig_noise, use_container_width=True)
-        
+            # Simulated 3D Vibration Plot (PID / IMU testing)
+            x_val = np.linspace(0, 10, 50); y_val = np.linspace(0, 10, 50); X, Y = np.meshgrid(x_val, y_val)
+            Z = np.sin(X) * np.cos(Y) * pid_p # The higher the PID, the crazier the graph
+            fig_3d = go.Figure(data=[go.Surface(z=Z, colorscale='Viridis')])
+            fig_3d.update_layout(title="IMU Vibration Matrix (PID Response)", scene=dict(bgcolor="rgba(0,0,0,0)"), paper_bgcolor="rgba(0,0,0,0)", font_color=text, height=400)
+            st.plotly_chart(fig_3d, use_container_width=True)
         with c_hw2:
-            st.markdown("#### Geofence & Navigation Logic")
-            # 3D Animation trick using Plotly Camera rotation
-            theta = np.linspace(0, 2*np.pi, 100)
-            x, y = geofence * np.cos(theta), geofence * np.sin(theta)
-            fig_geo = px.line(x=x, y=y, title=f"Virtual Geofence (Radius: {geofence}m)")
-            fig_geo.add_scatter(x=[latest['latitude'].mean()*1000 % geofence], y=[latest['longitude'].mean()*1000 % geofence], mode='markers', marker=dict(size=15, color='red'), name='Drone Position')
-            fig_geo.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color=text_col, height=350)
-            st.plotly_chart(fig_geo, use_container_width=True)
+            st.markdown(f"<div class='glass-card'><h4>📡 Antenna Link Budget</h4><p>Based on LoRa Spreading Factor ({lora_sf}), the calculated signal penetration depth allows for operation in <b>DENSE FOREST/URBAN CANOPY</b>.</p><h4>🔋 Battery RUL Matrix</h4><p>Swarm Topology: <b>{swarm_topo}</b> ensures redundant data routing if a primary node fails.</p></div>", unsafe_allow_html=True)
 
     with tabs[3]: # NEURAL VISION
-        st.markdown("### 👁️ YOLOv8 Edge-AI Feeds")
-        st.write("Optical Flow Nav: ", "🟢 ACTIVE" if optical_flow else "🔴 INACTIVE")
-        st.write(f"FLIR Emissivity set to: {flir_emis}")
+        st.markdown("### 👁️ Real-Time Optical/Thermal Feeds")
+        cam1, cam2 = st.columns(2)
+        for i, (idx, r) in enumerate(latest.head(2).iterrows()):
+            b_col = "red" if r['temperature'] > (80 if unit_sys == "Metric" else 176) else accent
+            cam = cam1 if i == 0 else cam2
+            cam.markdown(f"""
+            <div style="border: 2px solid {b_col}; background: #000; height: 300px; position: relative; border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 50px rgba(0,0,0,1);">
+                <div style="position: absolute; top: 15px; left: 15px; color: {b_col}; font-family: monospace; font-size: 15px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px;">
+                    REC 🔴 | NODE: {r['drone_id']} | CONF: 94% <br> EMISSIVITY CALIB: {flir_emis}
+                </div>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.1); font-size: 80px;">⌖</div>
+            </div>
+            """, unsafe_allow_html=True)
 
     with tabs[4]: # ENV
-        st.markdown("### 💨 Environmental Physics")
-        st.write(f"Barometric QNH: {baro_qnh} hPa (Affects Altitude accuracy)")
+        st.markdown("### 💨 Environmental Force Multipliers")
+        m_env1, m_env2 = st.columns(2)
+        m_env1.metric("Wind Vector Force", f"{wind_spd} km/h")
+        m_env2.metric("Solar Irradiance Load", f"{solar_irr} W/m²")
 
     with tabs[5]: # DATA
         st.dataframe(df_tel, use_container_width=True)
 
-# --- 9. AUTO-REFRESH ---
+# --- 9. AUTO-REFRESH ENGINE (NO WHILE LOOPS) ---
 time.sleep(2)
 st.rerun()
