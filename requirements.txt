@@ -4,9 +4,8 @@ pandas
 polars
 plotly
 pydeck
-ultralytics
-opencv-python-headless
-easyocr
+numpy
 scipy
-prophet
+ultralytics
+easyocr
 Pillow
