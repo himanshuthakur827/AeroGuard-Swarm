@@ -1,5 +1,12 @@
 streamlit
 supabase
 pandas
+polars
 plotly
-numpy
+pydeck
+ultralytics
+opencv-python-headless
+easyocr
+scipy
+prophet
+Pillow
