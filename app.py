@@ -53,7 +53,6 @@ st.markdown(f"""
     }}
     .glass-card:hover {{ transform: scale(1.01); animation: borderGlow 2s infinite; }}
     
-    /* Hacker Terminal */
     .terminal-box {{
         background-color: #000; color: #00ff00; font-family: 'VT323', monospace; 
         font-size: 1.2rem; padding: 15px; height: 300px; overflow: hidden; 
@@ -117,7 +116,7 @@ with st.sidebar:
         kalman_q = st.number_input("Kalman Process Noise", 0.001, 0.1, 0.01, format="%.3f", help="[WHAT] Represents the level of uncertainty in the math model predicting the drone's position. [REAL DEPLOYMENT] Wind gusts and vibrations inject massive noise into the onboard IMU. This filters out vibration without ignoring actual trajectory changes.")
 
     with st.expander("📡 Hardware: Telemetry & Radio"):
-        lora_sf = select_slider = st.select_slider("LoRa Spreading Factor", [7, 8, 9, 10, 11, 12], value=10, help="[WHAT] Determines the duration of a single 'chirp' in LoRaWAN frequency modulation. [REAL DEPLOYMENT] In dense mountainous terrain, you will physically increase the SF to 11 or 12 to ensure the MQTT payload penetrates obstacles.")
+        lora_sf = st.select_slider("LoRa Spreading Factor", [7, 8, 9, 10, 11, 12], value=10, help="[WHAT] Determines the duration of a single 'chirp' in LoRaWAN frequency modulation. [REAL DEPLOYMENT] In dense mountainous terrain, you will physically increase the SF to 11 or 12 to ensure the MQTT payload penetrates obstacles.")
         tx_power = st.slider("Transmit Power (dBm)", 2, 20, 14, help="[WHAT] Dictates the sheer electrical energy pushed into the radio antenna. [REAL DEPLOYMENT] In global wildfire deployments covering hundreds of kilometers, crank this up to the maximum 20 dBm.")
         
     with st.expander("👁️ Hardware: Thermal & Optical"):
@@ -185,9 +184,16 @@ if not df_tel.empty:
     m4.markdown(f"<div class='glass-card' style='animation-delay: 0.4s;'><div class='metric-title'>Z-Score Threshold</div><div class='metric-value'>{z_thresh} σ</div></div>", unsafe_allow_html=True)
 
     if critical > 0:
-        st.markdown(f"<div class='glass-card' style='border-top-color:#ef4444; background:rgba(239, 68, 68, 0.1);'><h3 style='color:#ef4444 !important;'>🚨 CRITICAL ALERT TRIGGERED</h3><p>Anomaly exceeds Z-Score mathematical threshold ({z_thresh}σ). Pre-computing swarm intercept vectors.</p></div>", unsafe_allow_html=True)
-        # AUDIO SIREN TRIGGER
-        st.markdown("""<audio autoplay loop><source src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" type="audio/mpeg"></audio>""", unsafe_allow_html=True)
+        # HERE IS THE FIXED AUDIO SIREN WITH CONTROLS
+        st.markdown(f"""
+        <div class='glass-card' style='border-top-color:#ef4444; background:rgba(239, 68, 68, 0.1);'>
+            <h3 style='color:#ef4444 !important;'>🚨 CRITICAL ALERT TRIGGERED</h3>
+            <p>Anomaly exceeds Z-Score mathematical threshold ({z_thresh}σ). Pre-computing swarm intercept vectors.</p>
+            <audio autoplay loop controls style="height: 35px; margin-top: 10px; width: 300px;">
+                <source src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" type="audio/mpeg">
+            </audio>
+        </div>
+        """, unsafe_allow_html=True)
 
     # --- 8. THE TABS ---
     tabs = st.tabs(i18n[L]['tabs'])
