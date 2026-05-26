@@ -151,7 +151,14 @@ st.markdown(f"<h1>{i18n[L]['title']}</h1>", unsafe_allow_html=True)
 if not df_tel.empty:
     latest = df_tel.sort_values('created_at').groupby('drone_id').last().reset_index()
     max_t = latest['temperature'].max()
-    critical = len(latest[latest['temperature'] > (80 if unit_sys == "Metric" else 176)])
+    
+    # 🧮 Z-SCORE MATHEMATICS CALCULATION
+    mean_temp = df_tel['temperature'].mean()
+    std_temp = df_tel['temperature'].std()
+    latest['live_z_score'] = (latest['temperature'] - mean_temp) / (std_temp + 0.0001)
+    
+    # Alert will ONLY trigger if the calculated Z-Score is higher than your Sidebar Slider!
+    critical = len(latest[latest['live_z_score'] > z_thresh])
     
     # --- ANIMATED METRIC CARDS ---
     m1, m2, m3, m4 = st.columns(4)
