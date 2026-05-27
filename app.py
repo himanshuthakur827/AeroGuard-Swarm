@@ -491,58 +491,79 @@ with tabs[5]:
         Command Center operators rarely interact with this tab. It is an engineering sandbox used by Data Scientists and Backend Engineers to perform "Crash Forensics" after a system failure, allowing them to isolate the exact millisecond a sensor or node malfunctioned.
         """)
 
-# TAB 7: DEPLOYMENT (NEW)
+# TAB 7: INDUSTRIAL DEPLOYMENT BIBLE (Master Manual)
 with tabs[6]:
-    st.markdown("### 🚀 REAL-WORLD INDUSTRIAL DEPLOYMENT PROTOCOL")
+    st.markdown("### 🏗️ AERO-GUARD V19: INDUSTRIAL FLEET DEPLOYMENT BIBLE")
     
-    # Grid of Deployment Phases
-    col1, col2 = st.columns(2)
+    # Using sub-tabs to keep the massive detail organized
+    manual_tabs = st.tabs(["📋 Fleet BOM", "🔧 Hardware & Assembly", "💻 Jetson Setup (The Brain)", "💾 Data & Integration", "🚀 Final Launch"])
     
-    with col1:
+    with manual_tabs[0]:
+        st.markdown("#### 🛒 10-Drone Fleet Master BOM")
+        st.write("This fleet budget is approximately $4,500 USD per unit. Components selected strictly for industrial-grade reliability.")
+        bom_data = {
+            "Part": ["Frame", "FC", "AI Brain", "Thermal Cam", "GPS", "5G Module", "Motors/ESC", "Battery", "Misc/Loctite/Screws", "Storage"],
+            "Industrial Name": ["Carbon X-Quad", "Pixhawk 6C", "NVIDIA Jetson Orin Nano", "FLIR Boson 640", "Here4 RTK", "Quectel RM500Q", "T-Motor Anti-Gravity", "6S 10000mAh", "Industrial Grade Kit", "64GB Indus-SD"],
+            "Qty (10 Units)": [10, 10, 10, 10, 10, 10, 40, 20, 2, 10],
+            "Price": ["$250", "$350", "$550", "$2200", "$350", "$200", "$60", "$150", "$500", "$50"]
+        }
+        st.table(pd.DataFrame(bom_data))
+        st.info("💡 **Pro-Tip:** Always maintain 15% spare parts (props, screws, motors) at the refinery base station.")
+
+    with manual_tabs[1]:
+        st.markdown("#### 🛠️ Assembly & Hardware Manual (Minute Operational Details)")
         st.markdown("""
-        #### 🏗️ System Components
-        1. **Edge Node (The Swarm):**
-           - **Compute:** NVIDIA Jetson Orin Nano (AI Inference)
-           - **Sensors:** FLIR Boson (Thermal), RTK GPS, Gas Sensors.
-        2. **Communication (Network):**
-           - **LoRaWAN/5G:** Long-range secure telemetry.
-           - **MQTT Broker (HiveMQ):** Pub/Sub model for 50-5000 nodes.
-        3. **Backend/Server:**
-           - **Database:** Supabase/PostgreSQL (Time-series data).
-           - **API Layer:** FastAPI (Connecting DB to Dashboard).
+        **1. Mechanical Integrity:** - **Loctite Blue:** Apply 'Loctite Blue' (Threadlocker) to every motor-to-frame screw. Vibration at high RPM will loosen standard screws within minutes, leading to structural failure.
+        - **Vibration Damping:** Mount the Jetson Nano and thermal camera using 'Silicone Vibration Dampeners' (rubber balls). AI models (YOLO) require high-contrast, stable imagery. Frame vibrations cause 'false positive' anomaly detections.
+        - **Cable Management:** Use industrial zip-ties. Ensure no loose wires are near propellers. Loose cabling can cause catastrophic failure in less than 2 seconds.
         """)
-        
-    with col2:
+
+    with manual_tabs[2]:
+        st.markdown("#### 💻 Jetson Nano Setup (The Brain)")
+        st.write("Remote access and system automation procedures:")
         st.markdown("""
-        #### 🔋 Operational Logistics
-        1. **Charging:** Inductive wireless charging pads.
-           - *Strategy:* When battery < 15%, nodes follow return-to-home path.
-        2. **Deployment Scale:**
-           - **50 Drones:** Single server cluster.
-           - **5000 Drones:** Distributed edge architecture with localized cluster controllers.
-        3. **Integration Strategy:**
-           - Replace current random generator with `requests.get('https://api.swarm-core.io/live')`.
+        1. **Physical Connection:** Connect Jetson Nano via USB-to-Ethernet adapter to your laptop.
+        2. **SSH Connection:** Access the terminal: `ssh username@192.168.1.5` (Target the Jetson's specific IP).
+        3. **Code Transfer:** Transfer files using: `scp -r ./my_drone_code username@192.168.1.5:/home/user/`.
+        4. **Persistence (Auto-Run):** - Create a service file: `/etc/systemd/system/drone.service`
+           - Configure: `ExecStart=/usr/bin/python3 /home/user/my_drone_code/main.py`.
+           - Enable it: `sudo systemctl enable drone.service`. 
+           - The AI module will now boot automatically with the drone.
         """)
-        
-    st.markdown("---")
-    
-    st.info("""
-    ### 🔌 Switching from Simulation to Real-World Telemetry
-    To remove the false data, modify the `fetch_telemetry` function in the source code:
-    
-    ```python
-    # CHANGE THIS
-    # def fetch_telemetry(): ... (uses random)
-    
-    # TO THIS
-    def fetch_telemetry():
-        try:
-            # Connect to your production MQTT backend or API
-            resp = requests.get("[https://api.aeroguard.io/nodes](https://api.aeroguard.io/nodes)", timeout=1)
-            return pd.DataFrame(resp.json())
-        except:
-            return pd.DataFrame() # Fallback
-    ```
-    """)
+
+    with manual_tabs[3]:
+        st.markdown("#### 💾 Database & Integration (Production Pipeline)")
+        st.write("Transition from synthetic simulation to live industrial PostgreSQL data.")
+        st.code("""
+# app.py: Replace the random data generator with this production-ready function
+import requests
+from config import API_URL, API_KEY
+
+@st.cache_data(ttl=2) 
+def fetch_telemetry():
+    # Production Environment: Fetching real-time data from Supabase
+    headers = {
+        "apikey": API_KEY, 
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
+    try:
+        # Requesting live data from the database
+        response = requests.get(f"{API_URL}/rest/v1/telemetry?select=*", headers=headers)
+        if response.status_code == 200:
+            return pd.DataFrame(response.json()) # Real-world telemetry
+        return pd.DataFrame() 
+    except Exception:
+        return pd.DataFrame() # Fail-safe: Dashboard will not crash if DB is unreachable
+        """)
+        st.write("Note: Create a `config.py` file with your `API_URL` and `API_KEY` to keep credentials secure.")
+
+    with manual_tabs[4]:
+        st.markdown("#### 🚀 Final Launch Protocol")
+        st.write("1. **Network:** Ensure the 5G/LTE module has a valid M2M SIM card and is registered to the Private APN.")
+        st.write("2. **Safety Protocols:** Implement 'Emergency Stop' logic in `main.py`—if internet connectivity is lost, the drone must default to autonomous 'Return-to-Home' (RTH).")
+        st.write("3. **Battery Safety:** Implement 'Low Battery' threshold logic: `if battery < 15%: drone.land()`.")
+        st.success("The system is now ready for industrial-scale deployment.")
+        st.markdown("[Download Best.pt Model File](https://drive.google.com/file/d/1eE2doiC8-q-EGKRJ984kDh-kP91P6euq/view?usp=drive_link)")
     
     st.warning("⚠️ **Note:** Real deployment requires a static IP for your base station or a cloud-hosted MQTT broker to receive telemetry packets from remote drone swarms.")
