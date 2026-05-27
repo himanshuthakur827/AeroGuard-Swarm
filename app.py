@@ -32,7 +32,7 @@ yolo_model, ocr_reader = load_ai_models()
 st.set_page_config(page_title="AeroGuard V19 | Industrial Edition", layout="wide", initial_sidebar_state="expanded")
 
 if 'lang' not in st.session_state: st.session_state.lang = "EN"
-if 'theme' not in st.session_state: st.session_state.theme = "Dark (Cyber)"
+if 'theme' not in st.session_state: st.session_state.theme = "Light (Clean)"
 if 'auth' not in st.session_state: st.session_state.auth = False
 
 # Dynamic Theme Logic
