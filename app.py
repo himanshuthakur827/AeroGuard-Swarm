@@ -491,8 +491,33 @@ with tabs[5]:
         Command Center operators rarely interact with this tab. It is an engineering sandbox used by Data Scientists and Backend Engineers to perform "Crash Forensics" after a system failure, allowing them to isolate the exact millisecond a sensor or node malfunctioned.
         """)
 
-# TAB 7: INDUSTRIAL DEPLOYMENT BIBLE (Master Manual)
+# TAB 7: INDUSTRIAL DEPLOYMENT BIBLE (Force-Light Mode Wrapper)
 with tabs[6]:
+    # CSS: This force-injects Light Mode styles only for this specific Container
+    st.markdown("""
+        <style>
+        .light-tab-override {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #d1d5db;
+        }
+        /* Overriding all elements inside the div to be dark-text on white background */
+        .light-tab-override * {
+            color: #000000 !important;
+        }
+        .light-tab-override .stDataFrame {
+            background-color: #ffffff !important;
+        }
+        .light-tab-override .stInfo, .light-tab-override .stWarning, .light-tab-override .stSuccess {
+            background-color: #f3f4f6 !important;
+            border: 1px solid #d1d5db !important;
+        }
+        </style>
+        <div class="light-tab-override">
+    """, unsafe_allow_html=True)
+
     st.markdown("### 🏗️ AERO-GUARD V19: INDUSTRIAL FLEET DEPLOYMENT BIBLE")
     
     # Using sub-tabs to keep the massive detail organized
@@ -528,7 +553,7 @@ with tabs[6]:
         4. **Persistence (Auto-Run):** - Create a service file: `/etc/systemd/system/drone.service`
            - Configure: `ExecStart=/usr/bin/python3 /home/user/my_drone_code/main.py`.
            - Enable it: `sudo systemctl enable drone.service`. 
-           - The AI module will now boot automatically with the drone.
+           - The AI module now boots automatically with the drone.
         """)
 
     with manual_tabs[3]:
@@ -565,5 +590,6 @@ def fetch_telemetry():
         st.write("3. **Battery Safety:** Implement 'Low Battery' threshold logic: `if battery < 15%: drone.land()`.")
         st.success("The system is now ready for industrial-scale deployment.")
         st.markdown("[Download Best.pt Model File](https://drive.google.com/file/d/1eE2doiC8-q-EGKRJ984kDh-kP91P6euq/view?usp=drive_link)")
-    
-    st.warning("⚠️ **Note:** Real deployment requires a static IP for your base station or a cloud-hosted MQTT broker to receive telemetry packets from remote drone swarms.")
+
+    # Closing the Light Mode wrapper
+    st.markdown("</div>", unsafe_allow_html=True)
