@@ -84,43 +84,96 @@ with st.sidebar:
     st.markdown("---")
     
     enable_siren = st.checkbox("🔊 Enable Siren Alarm", value=False, help="""
-    [SYMBOL 🔊] Physical Audio Output Toggle.
-    [WHAT] Activates an HTML5 hooter sound connected to the statistical thermal anomaly engine.
-    [WHY] In a bustling command center, visual alerts can be missed if the operator is distracted. Audio creates a psychological urgency.
-    [HOW IT WORKS] If any drone's live Z-Score mathematically breaches the set threshold, the code automatically executes the audio file.
+    [WHAT] A physical HTML5 audio trigger mechanically linked to the Z-Score statistical engine.
+    [WHY IS IT IMPORTANT] In a high-stress industrial command center, operators suffer from 'alarm fatigue' and can easily miss visual cues on crowded screens. Auditory warnings bypass visual distraction and create immediate psychological urgency.
+    [HOW IT WORKS] If the backend polling detects a drone telemetry packet exceeding the defined Z-Score threshold, the script overrides local audio to play the emergency siren.
+    [HOW TO USE / SET IT] Leave this toggled OFF during routine post-incident data review to prevent annoyance. Toggle ON exclusively during active pipeline containment missions or high-risk atmospheric events.
     """)
     
     pause_sync = st.checkbox("⏸️ Pause Live Sync", value=False, key="pause_sync", help="""
-    [SYMBOL ⏸️] System Override / Freeze.
-    [WHAT] A manual switch that completely halts the 5-second asynchronous cloud refresh loop.
-    [WHY] When you are uploading a custom image for Neural AI scanning, a background refresh will interrupt and wipe your upload, causing extreme frustration.
-    [HOW IT WORKS] It bypasses the backend Polars data-fetch cycle, locking all current map coordinates and graphs in their exact current state.
+    [WHAT] A global system override that halts the 5-second asynchronous cloud data-polling loop.
+    [WHY IS IT IMPORTANT] Crucial for operator interaction stability. When uploading a custom image to the Neural AI module, a background refresh will interrupt the HTTP POST request, wiping the upload mid-way and causing extreme frustration.
+    [HOW IT WORKS] Modifies the session state to bypass the backend Polars data-fetch cycle, effectively freezing all map coordinates and graphs at their current timestamp.
+    [HOW TO USE / SET IT] Check this box immediately before analyzing a specific heat signature on the map or uploading imagery. Uncheck to resume live MQTT ingestion.
     """)
     
     with st.expander("🌐 UI & Region Setup"):
-        st.session_state.lang = st.selectbox("Interface Language", ["EN", "HI"], index=["EN", "HI"].index(st.session_state.lang), help="[WHAT] JSON Dictionary mapping for localization.")
-        new_theme = st.selectbox("UI Mode", ["Dark (Cyber)", "Light (Clean)"], index=["Dark (Cyber)", "Light (Clean)"].index(st.session_state.theme), help="[WHAT] Instant CSS Injection. [WHY] Human visual comfort. Dark mode reduces eye strain.")
+        st.session_state.lang = st.selectbox("Interface Language", ["EN", "HI"], index=["EN", "HI"].index(st.session_state.lang), help="""
+        [WHAT] JSON Dictionary mapping for global localization.
+        [WHY IS IT IMPORTANT] Industrial command centers often transfer tactical control between international engineering teams across different time zones (e.g., handing over from a Russian facility to an Indian facility).
+        [HOW IT WORKS] Intercepts the UI rendering tree and re-maps all text string variables to the selected language dynamically.
+        [HOW TO SET IT] Choose based on the primary operational language of the active shift crew.
+        """)
+        new_theme = st.selectbox("UI Mode", ["Dark (Cyber)", "Light (Clean)"], index=["Dark (Cyber)", "Light (Clean)"].index(st.session_state.theme), help="""
+        [WHAT] Instant CSS injection for visual adaptation.
+        [WHY IS IT IMPORTANT] Human visual comfort directly impacts reaction times.
+        [HOW TO SET IT] Select 'Dark (Cyber)' to significantly reduce eye strain and screen glare in dimly lit mobile command trucks. Select 'Light (Clean)' to defeat screen glare when field engineers are operating tablets under harsh, direct sunlight.
+        """)
         if new_theme != st.session_state.theme:
             st.session_state.theme = new_theme
             st.rerun()
-        unit_sys = st.radio("Measurement System", ["Metric", "Imperial"])
+        unit_sys = st.radio("Measurement System", ["Metric", "Imperial"], help="""
+        [WHAT] Real-time thermodynamic and spatial unit conversion engine.
+        [WHY IS IT IMPORTANT] Ensures rigid standard compliance across different international aviation and petroleum engineering jurisdictions.
+        [HOW TO SET IT] Toggle based on the required reporting metrics of local government regulators.
+        """)
 
     with st.expander("🧮 Mathematical Fire Spread"):
-        spread_alg = st.selectbox("Spread Algorithm", ["Rothermel Equation", "Huygens Principle"], help="[WHAT] The core predictive physics logic. [WHY] Rothermel is mathematically tuned for surface-level spread.")
-        z_thresh = st.slider("Anomaly Z-Score (σ)", 1.0, 5.0, 2.5, help="[WHAT] Statistical Standard Deviation (Sigma σ) threshold setting. [WHY] Z-Score detects sudden mathematical deviations from the ambient environment.")
-        calc_dt = st.number_input("Calculus Δt (Seconds)", 0.1, 5.0, 1.0, help="[WHAT] The 'Delta Time' (Δt) denominator for calculating physical derivatives.")
+        spread_alg = st.selectbox("Spread Algorithm", ["Rothermel Equation", "Huygens Principle"], help="""
+        [WHAT] The core predictive physics engine that determines how a threat will expand.
+        [WHY IS IT IMPORTANT] You must predict where the threat is moving to evacuate personnel effectively.
+        [HOW TO SET IT] Select 'Rothermel Equation' for surface-level threats like spilled crude oil or chemical liquid pools. Select 'Huygens Principle' to calculate 3D elliptical volumetric growth for highly pressurized gas cloud expansions.
+        """)
+        z_thresh = st.slider("Anomaly Z-Score (σ)", 1.0, 5.0, 2.5, help="""
+        [WHAT] Statistical Standard Deviation (Sigma σ) threshold sensitivity.
+        [WHY IS IT IMPORTANT] A metal pipeline in a desert is naturally extremely hot. A simple fixed-temperature alarm would constantly trigger false positives. Z-Score detects sudden mathematical deviations from the ambient rolling average.
+        [HOW IT WORKS] An alert triggers ONLY if: Live Drone Temp > (Rolling Mean Temp + (Z-Score * Standard Deviation)).
+        [HOW TO SET IT] Keep at 2.5σ for normal operation. Drop to 1.5σ for ultra-sensitive scanning in cold climates. Raise to 4.0σ near active flare stacks to ignore normal operational heat.
+        """)
+        calc_dt = st.number_input("Calculus Δt (Seconds)", 0.1, 5.0, 1.0, help="""
+        [WHAT] The 'Delta Time' (Δt) denominator for calculating physical thermal derivatives.
+        [WHY IS IT IMPORTANT] It establishes the foundational time-step limits for the Thermal Flux calculation (∂T/∂t), preventing mathematical division-by-zero errors in the calculus engine.
+        [HOW TO SET IT] In real deployment, this exact number must strictly match the Hertz (Hz) refresh rate output of your physical drone's onboard FLIR thermal camera. If the camera sends data every 1 second, set this to 1.0.
+        """)
 
     with st.expander("⚙️ Hardware: Flight & Tuning"):
-        pid_p = st.slider("Proportional Gain (kP)", 0.0, 2.0, 0.5, help="[WHAT] The primary 'P' (Proportional) value in the drone's PID flight controller.")
-        kalman_q = st.number_input("Kalman Process Noise", 0.001, 0.1, 0.01, format="%.3f", help="[WHAT] Statistical sensor filtering matrix. [WHY] Drone rotors cause intense physical vibrations.")
+        pid_p = st.slider("Proportional Gain (kP)", 0.0, 2.0, 0.5, help="""
+        [WHAT] The primary 'P' (Proportional) mathematical weight in the drone's PID (Proportional-Integral-Derivative) flight controller.
+        [WHY IS IT IMPORTANT] Prevents the swarm drones from drifting away from their designated pipeline sector during heavy atmospheric crosswinds.
+        [HOW IT WORKS] Calculates the GPS error margin and applies corrective motor voltage directly proportional to that error.
+        [HOW TO SET IT] Increase this value on windy days for aggressive motor correction. Decrease on calm days to save drone battery life.
+        """)
+        kalman_q = st.number_input("Kalman Process Noise", 0.001, 0.1, 0.01, format="%.3f", help="""
+        [WHAT] A statistical sensor filtering matrix variable.
+        [WHY IS IT IMPORTANT] Drone rotors cause intense physical vibrations, making raw GPS and IMU data extremely 'jumpy' and mathematically unusable for precision mapping.
+        [HOW IT WORKS] The Kalman filter predicts the drone's true position by filtering out the variance of this 'Process Noise'.
+        [HOW TO SET IT] Lower values trust the mathematical model; higher values trust the raw sensors. Adjust based on the physical vibration dampening of your drone frame.
+        """)
 
     with st.expander("📡 Hardware: Telemetry & Radio"):
-        lora_sf = st.select_slider("LoRa Spreading Factor", [7, 8, 9, 10, 11, 12], value=10, help="[WHAT] The physical duration of a radio 'chirp' in the LoRaWAN telemetry protocol.")
-        tx_power = st.slider("Transmit Power (dBm)", 2, 20, 14, help="[WHAT] Antenna transmission wattage output. [WHY] 20dBm pushes maximum electrical power for BVLOS.")
+        lora_sf = st.select_slider("LoRa Spreading Factor", [7, 8, 9, 10, 11, 12], value=10, help="""
+        [WHAT] The physical duration of a radio 'chirp' in the LoRaWAN telemetry communications protocol.
+        [WHY IS IT IMPORTANT] Dictates the critical balance between data transmission bandwidth (speed) and signal penetration (range).
+        [HOW TO SET IT] Set to SF7 for fast data transfer in clear, open desert fields. Crank to SF12 when drones are flying behind thick steel refinery structures or dense forests; it significantly slows data speed but ensures the radio signal punches through physical obstacles.
+        """)
+        tx_power = st.slider("Transmit Power (dBm)", 2, 20, 14, help="""
+        [WHAT] The physical antenna transmission wattage output of the base station.
+        [WHY IS IT IMPORTANT] Determines the absolute maximum physical range the drones can fly away from the command center before losing connection.
+        [HOW TO SET IT] Push to maximum (20 dBm) strictly for commanding drones on 15km+ Beyond Visual Line of Sight (BVLOS) pipeline inspection routes. Lower to 10 dBm for close-range testing to conserve power.
+        """)
         
     with st.expander("💨 Physics: Environment"):
-        wind_spd = st.slider("Wind Vector (km/h)", 0, 120, 25, help="[WHAT] Environmental live input. [WHY] Wind is the absolute #1 variable that dictates the direction of a gas cloud.")
-        solar_irr = st.slider("Solar Irradiance (W/m²)", 0, 1200, 800, help="[WHAT] Ambient sun radiation intensity. [WHY] Prevents false positive alarms on hot sunny days.")
+        wind_spd = st.slider("Wind Vector (km/h)", 0, 120, 25, help="""
+        [WHAT] Environmental live physical input variable representing atmospheric air currents.
+        [WHY IS IT IMPORTANT] Wind is the absolute #1 external physical variable that dictates the direction, velocity, and catastrophic potential of a toxic gas cloud or fire.
+        [HOW IT WORKS] Modifying this instantly recalculates the Dynamic Rate of Spread (R) within the math engine.
+        [HOW TO SET IT] In simulation, slide to see mathematical changes. In deployment, this is overridden and fed directly by drone-mounted Pitot tube sensors.
+        """)
+        solar_irr = st.slider("Solar Irradiance (W/m²)", 0, 1200, 800, help="""
+        [WHAT] A measurement of ambient sun radiation intensity hitting the ground.
+        [WHY IS IT IMPORTANT] A critical factor for preventing false positive thermal alarms. If the sun is aggressively baking the metal pipes, the system uses this variable to mathematically subtract the solar load from the total thermal payload.
+        [HOW TO SET IT] Adjust to match the time of day (high at noon, zero at night) to isolate the actual internal pipeline friction heat from external weather interference.
+        """)
 
     if st.button("🔴 DISCONNECT UPLINK"): 
         st.session_state.auth = False; st.rerun()
@@ -150,7 +203,7 @@ st.markdown("""
 <div style="background: rgba(245, 158, 11, 0.15); border-left: 5px solid #f59e0b; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
     <h3 style="color: #f59e0b; margin-top: 0;">⚠️ SYSTEM NOTICE: SYNTHETIC SIMULATION MODE ACTIVE</h3>
     <p style="color: #cbd5e1; margin-bottom: 15px; font-size: 1.05rem; line-height: 1.6;">
-    <b>[CURRENT ARCHITECTURE STATUS]</b><br> Physical edge-computing nodes (RTK-GPS Drones, FLIR Thermal Cameras, and Pitot Tubes) are currently disconnected from this active browser session. <br><br>
+    <b>[CURRENT ARCHITECTURE STATUS]</b><br> Physical edge-computing nodes (RTK-GPS Drones, FLIR Thermal Cameras, Pitot Tubes, and Acoustic Sensors) are currently disconnected from this active browser session. <br><br>
     <b>[WHAT YOU ARE SEEING]</b><br> To demonstrate the mathematical integrity, visual UX architecture, and algorithmic processing of this command center, the backend is currently running a high-fidelity synthetic data generator. It simulates real-world pipeline telemetry (heat flux, GPS vectors, hardware battery) dynamically.<br><br>
     <b>[REAL-WORLD DEPLOYMENT PIPELINE]</b><br> In an active industrial or petroleum refinery scenario, this exact dashboard architecture will ingest live MQTT JSON payloads directly from the drone swarm. The math engine, 2D radar, and AI vision will seamlessly transition to processing real infrastructure metrics without altering the core codebase.<br><br>
     </p>
@@ -367,7 +420,7 @@ with tabs[4]:
         During a catastrophic refinery failure, Incident Commanders use this visual data to establish "Safe Perimeters." The inner bright zones are designated exclusively for robotic/drone containment, while the outer black zones dictate human evacuation staging areas.
         """)
 
-# TAB 6: DATA LAKE (Shifted from Tab 7)
+# TAB 6: DATA LAKE 
 with tabs[5]: 
     @st.fragment(run_every=5)
     def live_data_lake():
