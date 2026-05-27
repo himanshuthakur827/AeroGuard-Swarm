@@ -241,10 +241,10 @@ def live_top_metrics():
 
 live_top_metrics()
 
-# --- 6. THE TABS (Acoustic AI Removed) --- 
+# --- 6. THE TABS --- 
 tabs = st.tabs(["🌍 2D GLOBAL RADAR", "🧮 MATH ENGINE", "⚙️ HARDWARE MATRIX", "👁️ NEURAL AI", "💨 THERMODYNAMICS", "💾 DATA LAKE"])
 
-# TAB 1: 2D RADAR
+# TAB 1: 2D RADAR (WITH DEDICATED LIVE THREAT TABLE)
 with tabs[0]: 
     @st.fragment(run_every=5)
     def live_radar():
@@ -252,13 +252,18 @@ with tabs[0]:
         df_tel = fetch_telemetry()
         latest = df_tel.sort_values('created_at').groupby('drone_id').last().reset_index()
         
+        # Calculate Z-Score locally for categorization
+        mean_temp_local = df_tel['temperature'].mean()
+        std_temp_local = df_tel['temperature'].std()
+        latest['live_z_score'] = (latest['temperature'] - mean_temp_local) / (std_temp_local + 0.0001)
+        
+        # Top Section: Map
         map_col, safe_scroll_col = st.columns([3, 1])
         with map_col:
             fig_map = px.scatter_mapbox(
                 latest, lat="latitude", lon="longitude", color="temperature",
                 size="temperature", color_continuous_scale="Inferno", 
-                zoom=9.5, mapbox_style=map_style,
-                hover_name="drone_id"
+                zoom=9.5, mapbox_style=map_style, hover_name="drone_id"
             )
             fig_map.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
             st.plotly_chart(fig_map, use_container_width=True)
@@ -269,6 +274,41 @@ with tabs[0]:
                 <i>↕️ Use this blank zone to scroll down the page without zooming the map.</i>
             </div>
             """, unsafe_allow_html=True)
+            
+        # Bottom Section: THE BEAUTIFUL THREAT MATRIX
+        st.markdown(f"<br><h3 style='color: {accent}; margin-bottom: 0px;'>📋 LIVE SWARM THREAT MATRIX</h3>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #64748b; font-size: 0.95rem; margin-top: 5px; margin-bottom: 20px;'>Real-time swarm node classification based on active thermodynamic Z-Score parameters. Updates asynchronously every 5 seconds.</p>", unsafe_allow_html=True)
+        
+        # Sort values mathematically before formatting
+        latest = latest.sort_values(by='live_z_score', ascending=False)
+        
+        # Filter into the 3 Dedicated Categories
+        crit_raw = latest[latest['live_z_score'] >= z_thresh]
+        warn_raw = latest[(latest['live_z_score'] >= (z_thresh * 0.7)) & (latest['live_z_score'] < z_thresh)]
+        safe_raw = latest[latest['live_z_score'] < (z_thresh * 0.7)]
+        
+        # Formatting function for beautiful dataframe
+        def format_df(df):
+            d = df[['drone_id', 'temperature', 'battery_level', 'live_z_score']].copy()
+            d.rename(columns={'drone_id': 'Node ID', 'temperature': 'Temp', 'battery_level': 'Power', 'live_z_score': 'Z-Score'}, inplace=True)
+            d['Temp'] = d['Temp'].map("{:.1f} °C".format)
+            d['Power'] = d['Power'].map("{} %".format)
+            d['Z-Score'] = d['Z-Score'].map("{:.2f} σ".format)
+            return d
+            
+        c_crit, c_warn, c_safe = st.columns(3)
+        
+        with c_crit:
+            st.markdown("<div style='background: rgba(239, 68, 68, 0.15); border-top: 4px solid #ef4444; padding: 12px; border-radius: 8px 8px 0 0; text-align: center;'><b style='color:#ef4444; font-size:1.1rem;'>🔴 FULL THREAT (CRITICAL)</b></div>", unsafe_allow_html=True)
+            st.dataframe(format_df(crit_raw), use_container_width=True, hide_index=True)
+            
+        with c_warn:
+            st.markdown("<div style='background: rgba(245, 158, 11, 0.15); border-top: 4px solid #f59e0b; padding: 12px; border-radius: 8px 8px 0 0; text-align: center;'><b style='color:#f59e0b; font-size:1.1rem;'>🟡 CAN BE THREAT (ELEVATED)</b></div>", unsafe_allow_html=True)
+            st.dataframe(format_df(warn_raw), use_container_width=True, hide_index=True)
+            
+        with c_safe:
+            st.markdown("<div style='background: rgba(16, 185, 129, 0.15); border-top: 4px solid #10b981; padding: 12px; border-radius: 8px 8px 0 0; text-align: center;'><b style='color:#10b981; font-size:1.1rem;'>🟢 NO THREAT (SECURE)</b></div>", unsafe_allow_html=True)
+            st.dataframe(format_df(safe_raw), use_container_width=True, hide_index=True)
             
     live_radar()
     
@@ -390,7 +430,7 @@ with tabs[3]:
         2. Click *Initialize Deep Learning Core*.
 
         **🧠 UNDERSTANDING THE AI MODEL (`best.pt`):**
-        * The custom `best.pt` model loaded here is strictly a **Vision Model** trained specifically on visual datasets (like fire, smoke, or pipeline cracks). It does *not* process audio.
+        * The custom `best.pt` model loaded here is strictly a **Vision Model** trained specifically on visual datasets (like fire, smoke, or pipeline cracks).
         * The algorithm pushes the uploaded image matrix through this model. If it mathematically recognizes a trained hazard, it renders a physical **Bounding Box** over the anomaly and sounds the alert.
         * If the image is clean, it truthfully reports: *"System Normal"*. It does not fake detections.
 
