@@ -242,7 +242,7 @@ def live_top_metrics():
 live_top_metrics()
 
 # --- 6. THE TABS --- 
-tabs = st.tabs(["🌍 2D GLOBAL RADAR", "🧮 MATH ENGINE", "⚙️ HARDWARE MATRIX", "👁️ NEURAL AI", "💨 THERMODYNAMICS", "💾 DATA LAKE"])
+tabs = st.tabs(["🌍 2D GLOBAL RADAR", "🧮 MATH ENGINE", "⚙️ HARDWARE MATRIX", "👁️ NEURAL AI", "💨 THERMODYNAMICS", "💾 DATA LAKE", "🚀 DEPLOYMENT"])
 
 # TAB 1: 2D RADAR (WITH DEDICATED LIVE THREAT TABLE)
 with tabs[0]: 
@@ -490,3 +490,59 @@ with tabs[5]:
         **💡 PRIMARY USE CASE:**
         Command Center operators rarely interact with this tab. It is an engineering sandbox used by Data Scientists and Backend Engineers to perform "Crash Forensics" after a system failure, allowing them to isolate the exact millisecond a sensor or node malfunctioned.
         """)
+
+# TAB 7: DEPLOYMENT (NEW)
+with tabs[6]:
+    st.markdown("### 🚀 REAL-WORLD INDUSTRIAL DEPLOYMENT PROTOCOL")
+    
+    # Grid of Deployment Phases
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        #### 🏗️ System Components
+        1. **Edge Node (The Swarm):**
+           - **Compute:** NVIDIA Jetson Orin Nano (AI Inference)
+           - **Sensors:** FLIR Boson (Thermal), RTK GPS, Gas Sensors.
+        2. **Communication (Network):**
+           - **LoRaWAN/5G:** Long-range secure telemetry.
+           - **MQTT Broker (HiveMQ):** Pub/Sub model for 50-5000 nodes.
+        3. **Backend/Server:**
+           - **Database:** Supabase/PostgreSQL (Time-series data).
+           - **API Layer:** FastAPI (Connecting DB to Dashboard).
+        """)
+        
+    with col2:
+        st.markdown("""
+        #### 🔋 Operational Logistics
+        1. **Charging:** Inductive wireless charging pads.
+           - *Strategy:* When battery < 15%, nodes follow return-to-home path.
+        2. **Deployment Scale:**
+           - **50 Drones:** Single server cluster.
+           - **5000 Drones:** Distributed edge architecture with localized cluster controllers.
+        3. **Integration Strategy:**
+           - Replace current random generator with `requests.get('https://api.swarm-core.io/live')`.
+        """)
+        
+    st.markdown("---")
+    
+    st.info("""
+    ### 🔌 Switching from Simulation to Real-World Telemetry
+    To remove the false data, modify the `fetch_telemetry` function in the source code:
+    
+    ```python
+    # CHANGE THIS
+    # def fetch_telemetry(): ... (uses random)
+    
+    # TO THIS
+    def fetch_telemetry():
+        try:
+            # Connect to your production MQTT backend or API
+            resp = requests.get("[https://api.aeroguard.io/nodes](https://api.aeroguard.io/nodes)", timeout=1)
+            return pd.DataFrame(resp.json())
+        except:
+            return pd.DataFrame() # Fallback
+    ```
+    """)
+    
+    st.warning("⚠️ **Note:** Real deployment requires a static IP for your base station or a cloud-hosted MQTT broker to receive telemetry packets from remote drone swarms.")
