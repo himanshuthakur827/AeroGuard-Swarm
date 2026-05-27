@@ -524,6 +524,17 @@ with tabs[6]:
     manual_tabs = st.tabs(["📋 Fleet BOM", "🔧 Hardware & Assembly", "💻 Jetson Setup (The Brain)", "💾 Data & Integration", "🚀 Final Launch"])
     
     with manual_tabs[0]:
+        # --- YEH CSS ADD KAR IS TAB KE START MEIN ---
+        st.markdown("""
+            <style>
+            /* Force the table background to white */
+            .stTable { background-color: #ffffff !important; }
+            /* Force text inside the table to black */
+            .stTable td, .stTable th { color: #000000 !important; background-color: #ffffff !important; }
+            </style>
+        """, unsafe_allow_html=True)
+        # ---------------------------------------------
+
         st.markdown("#### 🛒 10-Drone Fleet Master BOM")
         st.write("This fleet budget is approximately $4,500 USD per unit. Components selected strictly for industrial-grade reliability.")
         bom_data = {
