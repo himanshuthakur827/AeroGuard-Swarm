@@ -24,7 +24,6 @@ def load_ai_models():
         ocr_reader = easyocr.Reader(['en'])
         return yolo_model, ocr_reader
     except Exception as e:
-        st.error(f"AI Load Error: {e}")
         return None, None
 
 yolo_model, ocr_reader = load_ai_models()
@@ -89,7 +88,6 @@ with st.sidebar:
     [WHAT] Activates an HTML5 hooter sound connected to the statistical thermal anomaly engine.
     [WHY] In a bustling command center, visual alerts can be missed if the operator is distracted. Audio creates a psychological urgency.
     [HOW IT WORKS] If any drone's live Z-Score mathematically breaches the set threshold, the code automatically executes the audio file.
-    [REAL DEPLOYMENT] Keep this OFF during data reviews to prevent alarm fatigue. Toggle ON only during active high-risk petroleum containment missions.
     """)
     
     pause_sync = st.checkbox("⏸️ Pause Live Sync", value=False, key="pause_sync", help="""
@@ -97,81 +95,32 @@ with st.sidebar:
     [WHAT] A manual switch that completely halts the 5-second asynchronous cloud refresh loop.
     [WHY] When you are uploading a custom image for Neural AI scanning, a background refresh will interrupt and wipe your upload, causing extreme frustration.
     [HOW IT WORKS] It bypasses the backend Polars data-fetch cycle, locking all current map coordinates and graphs in their exact current state.
-    [REAL DEPLOYMENT] Crucial for operators who need to 'freeze' the map to analyze a specific heat signature without the drones moving on the screen.
     """)
     
     with st.expander("🌐 UI & Region Setup"):
-        st.session_state.lang = st.selectbox("Interface Language", ["EN", "HI"], index=["EN", "HI"].index(st.session_state.lang), help="""
-        [WHAT] JSON Dictionary mapping for localization.
-        [WHY] Industrial command centers often transfer control between international teams (e.g., from Russia to India).
-        [HOW IT WORKS] Re-maps all UI strings to the selected language dynamically.
-        """)
-        
-        new_theme = st.selectbox("UI Mode", ["Dark (Cyber)", "Light (Clean)"], index=["Dark (Cyber)", "Light (Clean)"].index(st.session_state.theme), help="""
-        [WHAT] Instant CSS Injection.
-        [WHY] Human visual comfort. Dark mode significantly reduces eye strain in dimly lit mobile command trucks. Light mode is mandatory to defeat screen glare when operating tablets under harsh sunlight in the field.
-        """)
+        st.session_state.lang = st.selectbox("Interface Language", ["EN", "HI"], index=["EN", "HI"].index(st.session_state.lang), help="[WHAT] JSON Dictionary mapping for localization.")
+        new_theme = st.selectbox("UI Mode", ["Dark (Cyber)", "Light (Clean)"], index=["Dark (Cyber)", "Light (Clean)"].index(st.session_state.theme), help="[WHAT] Instant CSS Injection. [WHY] Human visual comfort. Dark mode reduces eye strain.")
         if new_theme != st.session_state.theme:
             st.session_state.theme = new_theme
             st.rerun()
-            
-        unit_sys = st.radio("Measurement System", ["Metric", "Imperial"], help="[WHAT] Real-time thermodynamic unit conversion (°C to °F). [WHY] Ensures standard compliance across different aviation and engineering jurisdictions.")
+        unit_sys = st.radio("Measurement System", ["Metric", "Imperial"])
 
     with st.expander("🧮 Mathematical Fire Spread"):
-        spread_alg = st.selectbox("Spread Algorithm", ["Rothermel Equation", "Huygens Principle"], help="""
-        [WHAT] The core predictive physics logic.
-        [WHY] You must predict where the threat is going. Rothermel is mathematically tuned for surface-level spread (perfect for spilled oil/chemicals). Huygens calculates 3D elliptical growth (perfect for high-pressure gas cloud expansions).
-        [HOW TO USE] Select based on the specific type of leak detected in the petroleum infrastructure.
-        """)
-        
-        z_thresh = st.slider("Anomaly Z-Score (σ)", 1.0, 5.0, 2.5, help="""
-        [WHAT] Statistical Standard Deviation (Sigma σ) threshold setting.
-        [WHY] A metal pipeline in a desert is naturally extremely hot. A simple fixed-temperature alarm would constantly trigger falsely. Z-Score detects sudden *mathematical deviations* from the ambient environment.
-        [HOW IT WORKS] An alert is only triggered if: Live Drone Temp > (Rolling Mean Temp + (Z-Score * Standard Deviation)).
-        """)
-        
-        calc_dt = st.number_input("Calculus Δt (Seconds)", 0.1, 5.0, 1.0, help="""
-        [WHAT] The 'Delta Time' (Δt) denominator for calculating physical derivatives.
-        [WHY] It establishes the time-step limits for the Thermal Flux calculation (∂T/∂t).
-        [HOW TO USE] In real deployment, this exact number must strictly match the Hertz (Hz) refresh rate output of your physical drone's onboard FLIR thermal camera.
-        """)
+        spread_alg = st.selectbox("Spread Algorithm", ["Rothermel Equation", "Huygens Principle"], help="[WHAT] The core predictive physics logic. [WHY] Rothermel is mathematically tuned for surface-level spread.")
+        z_thresh = st.slider("Anomaly Z-Score (σ)", 1.0, 5.0, 2.5, help="[WHAT] Statistical Standard Deviation (Sigma σ) threshold setting. [WHY] Z-Score detects sudden mathematical deviations from the ambient environment.")
+        calc_dt = st.number_input("Calculus Δt (Seconds)", 0.1, 5.0, 1.0, help="[WHAT] The 'Delta Time' (Δt) denominator for calculating physical derivatives.")
 
     with st.expander("⚙️ Hardware: Flight & Tuning"):
-        pid_p = st.slider("Proportional Gain (kP)", 0.0, 2.0, 0.5, help="""
-        [WHAT] The primary 'P' (Proportional) value in the drone's PID flight controller.
-        [WHY] Stops the drone from drifting away from the pipeline sector during heavy crosswinds.
-        [HOW IT WORKS] Applies corrective motor voltage directly proportional to the GPS error margin. Higher value = more aggressive motor correction.
-        """)
-        
-        kalman_q = st.number_input("Kalman Process Noise", 0.001, 0.1, 0.01, format="%.3f", help="""
-        [WHAT] Statistical sensor filtering matrix.
-        [WHY] Drone rotors cause intense physical vibrations, making raw GPS and IMU data 'jumpy' and unusable.
-        [HOW IT WORKS] The Kalman filter mathematically predicts the true position by filtering out the variance of the 'Process Noise'.
-        """)
+        pid_p = st.slider("Proportional Gain (kP)", 0.0, 2.0, 0.5, help="[WHAT] The primary 'P' (Proportional) value in the drone's PID flight controller.")
+        kalman_q = st.number_input("Kalman Process Noise", 0.001, 0.1, 0.01, format="%.3f", help="[WHAT] Statistical sensor filtering matrix. [WHY] Drone rotors cause intense physical vibrations.")
 
     with st.expander("📡 Hardware: Telemetry & Radio"):
-        lora_sf = st.select_slider("LoRa Spreading Factor", [7, 8, 9, 10, 11, 12], value=10, help="""
-        [WHAT] The physical duration of a radio 'chirp' in the LoRaWAN telemetry protocol.
-        [WHY] Balances data transmission speed vs. signal penetration range.
-        [HOW TO USE] SF7 = Fast data, low range. Crank to SF12 when drones fly behind thick steel refinery structures; it slows data but ensures the signal punches through physical obstacles.
-        """)
-        
-        tx_power = st.slider("Transmit Power (dBm)", 2, 20, 14, help="""
-        [WHAT] Antenna transmission wattage output.
-        [WHY] 20dBm pushes maximum electrical power into the antenna. Required for commanding drones on 15km+ Beyond Visual Line of Sight (BVLOS) pipeline inspection routes.
-        """)
+        lora_sf = st.select_slider("LoRa Spreading Factor", [7, 8, 9, 10, 11, 12], value=10, help="[WHAT] The physical duration of a radio 'chirp' in the LoRaWAN telemetry protocol.")
+        tx_power = st.slider("Transmit Power (dBm)", 2, 20, 14, help="[WHAT] Antenna transmission wattage output. [WHY] 20dBm pushes maximum electrical power for BVLOS.")
         
     with st.expander("💨 Physics: Environment"):
-        wind_spd = st.slider("Wind Vector (km/h)", 0, 120, 25, help="""
-        [WHAT] Environmental live input.
-        [WHY] Wind is the absolute #1 variable that dictates the direction and velocity of a toxic gas cloud or fire.
-        [HOW IT WORKS] Modifying this instantly recalculates the Dynamic Rate of Spread (R) in the Math Engine.
-        """)
-        
-        solar_irr = st.slider("Solar Irradiance (W/m²)", 0, 1200, 800, help="""
-        [WHAT] Ambient sun radiation intensity.
-        [WHY] Prevents false positive alarms. If the sun is baking the metal pipes, the system mathematically subtracts this solar load from the total thermal payload to isolate the *actual* internal pipeline heat.
-        """)
+        wind_spd = st.slider("Wind Vector (km/h)", 0, 120, 25, help="[WHAT] Environmental live input. [WHY] Wind is the absolute #1 variable that dictates the direction of a gas cloud.")
+        solar_irr = st.slider("Solar Irradiance (W/m²)", 0, 1200, 800, help="[WHAT] Ambient sun radiation intensity. [WHY] Prevents false positive alarms on hot sunny days.")
 
     if st.button("🔴 DISCONNECT UPLINK"): 
         st.session_state.auth = False; st.rerun()
@@ -196,11 +145,12 @@ latest_main = df_main.sort_values('created_at').groupby('drone_id').last().reset
 # --- 5. HEADER & TOP METRICS ---
 st.title("🛰️ AeroGuard V19: Command Center")
 
+# 🔥 ELABORATED DISCLAIMER BANNER 🔥
 st.markdown("""
 <div style="background: rgba(245, 158, 11, 0.15); border-left: 5px solid #f59e0b; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
     <h3 style="color: #f59e0b; margin-top: 0;">⚠️ SYSTEM NOTICE: SYNTHETIC SIMULATION MODE ACTIVE</h3>
     <p style="color: #cbd5e1; margin-bottom: 15px; font-size: 1.05rem; line-height: 1.6;">
-    <b>[CURRENT ARCHITECTURE STATUS]</b><br> Physical edge-computing nodes (RTK-GPS Drones, FLIR Thermal Cameras, Pitot Tubes, and Acoustic Sensors) are currently disconnected from this active browser session. <br><br>
+    <b>[CURRENT ARCHITECTURE STATUS]</b><br> Physical edge-computing nodes (RTK-GPS Drones, FLIR Thermal Cameras, and Pitot Tubes) are currently disconnected from this active browser session. <br><br>
     <b>[WHAT YOU ARE SEEING]</b><br> To demonstrate the mathematical integrity, visual UX architecture, and algorithmic processing of this command center, the backend is currently running a high-fidelity synthetic data generator. It simulates real-world pipeline telemetry (heat flux, GPS vectors, hardware battery) dynamically.<br><br>
     <b>[REAL-WORLD DEPLOYMENT PIPELINE]</b><br> In an active industrial or petroleum refinery scenario, this exact dashboard architecture will ingest live MQTT JSON payloads directly from the drone swarm. The math engine, 2D radar, and AI vision will seamlessly transition to processing real infrastructure metrics without altering the core codebase.<br><br>
     </p>
@@ -210,7 +160,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# 🚀 LAG-FREE FIX: Only the top numbers refresh, not the whole page!
+# 🚀 LAG-FREE FIX: Only the top numbers refresh
 @st.fragment(run_every=5)
 def live_top_metrics():
     if st.session_state.pause_sync:
@@ -238,9 +188,8 @@ def live_top_metrics():
 
 live_top_metrics()
 
-# --- 6. THE TABS --- 
-# 🚀 LAG-FREE FIX: Tabs are outside the refresh loop. Tab switching is now instant!
-tabs = st.tabs(["🌍 2D GLOBAL RADAR", "🧮 MATH ENGINE", "⚙️ HARDWARE MATRIX", "👁️ NEURAL AI", "💨 THERMODYNAMICS", "🎧 ACOUSTICS", "💾 DATA LAKE"])
+# --- 6. THE TABS (Acoustic AI Removed) --- 
+tabs = st.tabs(["🌍 2D GLOBAL RADAR", "🧮 MATH ENGINE", "⚙️ HARDWARE MATRIX", "👁️ NEURAL AI", "💨 THERMODYNAMICS", "💾 DATA LAKE"])
 
 # TAB 1: 2D RADAR
 with tabs[0]: 
@@ -250,16 +199,24 @@ with tabs[0]:
         df_tel = fetch_telemetry()
         latest = df_tel.sort_values('created_at').groupby('drone_id').last().reset_index()
         
-        # 🚀 2D Mapbox implementation (Ultra Lightweight)
-        fig_map = px.scatter_mapbox(
-            latest, lat="latitude", lon="longitude", color="temperature",
-            size="temperature", color_continuous_scale="Inferno", 
-            zoom=9.5, mapbox_style=map_style,
-            hover_name="drone_id"
-        )
-        fig_map.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-        st.plotly_chart(fig_map, use_container_width=True)
-        
+        map_col, safe_scroll_col = st.columns([3, 1])
+        with map_col:
+            fig_map = px.scatter_mapbox(
+                latest, lat="latitude", lon="longitude", color="temperature",
+                size="temperature", color_continuous_scale="Inferno", 
+                zoom=9.5, mapbox_style=map_style,
+                hover_name="drone_id"
+            )
+            fig_map.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+            st.plotly_chart(fig_map, use_container_width=True)
+
+        with safe_scroll_col:
+            st.markdown("""
+            <div style='text-align:center; padding-top: 150px; color: #64748b; font-size: 0.9rem;'>
+                <i>↕️ Use this blank zone to scroll down the page without zooming the map.</i>
+            </div>
+            """, unsafe_allow_html=True)
+            
     live_radar()
     
     with st.expander("📖 DEEP DIVE: HOW TO READ THE 2D TACTICAL RADAR", expanded=False):
@@ -268,7 +225,7 @@ with tabs[0]:
         > **[WHAT IS IT?]** A real-time 2D topographical map rendered using Plotly Mapbox. It visualizes the exact physical latitude and longitude of every drone over a highly detailed real-world map grid showing terrain, roads, and infrastructure.
         
         **🕹️ MAP CONTROLS:**
-        * **Zoom:** Use your mouse scroll wheel to zoom in/out. (The map is fully integrated, leaving plenty of safe space on the page to scroll normally without trapping your cursor).
+        * **Zoom:** Use your mouse scroll wheel to zoom in/out. (The map is fully integrated, leaving plenty of safe space on the right to scroll normally without trapping your cursor).
         * **Pan:** Left-click and drag to move across the map.
         * **Hover:** Place your cursor over any circular node to read the exact drone ID and the raw thermal telemetry extracted from that GPS coordinate.
         
@@ -316,7 +273,7 @@ with tabs[1]:
         We don't just track where the hazard *is*; we use this continuous calculus to predict where the hazard *will be* in 30 minutes, allowing for targeted evacuation of specific refinery sectors.
         """)
 
-# TAB 3: HARDWARE MATRIX (Static - Zero Lag)
+# TAB 3: HARDWARE MATRIX 
 with tabs[2]: 
     c_hw1, c_hw2 = st.columns(2)
     with c_hw1:
@@ -342,8 +299,11 @@ with tabs[2]:
         * *Why it matters:* If a drone flies behind dense steel refinery pipes, standard Wi-Fi drops. The operator ensures the SF is high enough (SF10-SF12) to punch through solid obstacles at the cost of data speed.
         """)
 
-# TAB 4: NEURAL AI (Static - Zero Lag, safe for uploads)
+# TAB 4: NEURAL AI 
 with tabs[3]: 
+    if yolo_model is None:
+        st.warning("⚠️ **Neural AI Module Offline:** Missing server graphic dependencies. Add `opencv-python-headless` to requirements.txt to activate YOLO inference.")
+        
     uploaded_file = st.file_uploader("📸 UPLOAD CUSTOM DRONE IMAGERY", type=["jpg", "png", "jpeg"])
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
@@ -360,7 +320,7 @@ with tabs[3]:
                     else:
                         st.success("✅ System Normal: No anomalies detected in this frame.")
                 else:
-                    st.warning("AI Model failed to load.")
+                    st.error("AI engine is offline.")
     else:
         cam1, cam2 = st.columns(2)
         for i, (idx, r) in enumerate(latest_main.head(2).iterrows()):
@@ -373,19 +333,19 @@ with tabs[3]:
         > **[WHAT IS IT?]** An active Edge-AI vision engine powered by the YOLOv8 (You Only Look Once) architecture. It uses PyTorch tensor weights to scan raw pixels for trained hazards.
 
         **🛠️ HOW TO USE IT:**
-        1.  Upload an image of pipeline infrastructure, a pressure gauge, or a fire event.
-        2.  Click *Initialize Deep Learning Core*.
+        1. Upload an image of pipeline infrastructure, a pressure gauge, or a fire event.
+        2. Click *Initialize Deep Learning Core*.
 
-        **🧠 WHAT HAPPENS UNDER THE HOOD?**
-        * The algorithm pushes the image matrix through the loaded AI model.
-        * If it mathematically recognizes a hazard, it will render a physical **Bounding Box** over the anomaly and sound the alert.
-        * If the image is clean (e.g., normal pipes or an empty field), it will truthfully report: *"System Normal"*. It does not fake detections.
+        **🧠 UNDERSTANDING THE AI MODEL (`best.pt`):**
+        * The custom `best.pt` model loaded here is strictly a **Vision Model** trained specifically on visual datasets (like fire, smoke, or pipeline cracks). It does *not* process audio.
+        * The algorithm pushes the uploaded image matrix through this model. If it mathematically recognizes a trained hazard, it renders a physical **Bounding Box** over the anomaly and sounds the alert.
+        * If the image is clean, it truthfully reports: *"System Normal"*. It does not fake detections.
 
-        **💡 WHY IT REPLACES HUMAN OPERATORS:**
-        Humans experience fatigue when monitoring 50 drone feeds simultaneously, leading to missed micro-fractures in pipes. The Neural AI applies flawless mathematical scrutiny to every single frame without resting.
+        **💡 REAL-WORLD DEPLOYMENT:**
+        In a live scenario, operators will not manually upload images. This exact Neural Vision Core will be directly connected to the drone's gimbal-mounted FLIR/Optical cameras. The model (`best.pt`) will process the live video feed frame-by-frame at the Edge (on the drone itself), sending only critical bounding-box alerts back to this command center to save bandwidth.
         """)
 
-# TAB 5: THERMODYNAMICS (Static - Zero Lag)
+# TAB 5: THERMODYNAMICS 
 with tabs[4]: 
     x = np.linspace(-3, 3, 50); y = np.linspace(-3, 3, 50); X, Y = np.meshgrid(x, y)
     Z = np.exp(-(X**2 + Y**2)) 
@@ -407,28 +367,8 @@ with tabs[4]:
         During a catastrophic refinery failure, Incident Commanders use this visual data to establish "Safe Perimeters." The inner bright zones are designated exclusively for robotic/drone containment, while the outer black zones dictate human evacuation staging areas.
         """)
 
-# TAB 6: ACOUSTICS
-with tabs[5]:
-    audio_file = st.file_uploader("Upload Drone Audio Log (.wav, .mp3)", type=["wav", "mp3"])
-    if audio_file:
-        st.audio(audio_file)
-        if st.button("Run CNN-LSTM Frequency Analysis"):
-            st.error("⚠️ ANOMALY DETECTED: High-Frequency Hissing (Match: Gas Leak Signature - 91%)")
-            
-    with st.expander("📖 DEEP DIVE: ACOUSTIC FREQUENCY ANALYSIS", expanded=False):
-        st.markdown("""
-        ### 🎧 Auditory Early-Warning System
-        > **[WHAT IS IT?]** An auditory deep-learning network designed to process live audio feeds from drone microphones.
-
-        **🔍 THE SCIENCE BEHIND IT:**
-        Thermal cameras and visual AI are reactive—they only see gas *after* a massive leak or fire has started. The Acoustic AI utilizes a CNN-LSTM network to hunt for high-frequency micro-hissing sounds. 
-
-        **💡 WHY IT'S THE ULTIMATE SAFEGUARD:**
-        These specific acoustic frequencies are generated by microscopic hairline cracks in highly pressurized pipes. By "listening" to the infrastructure, the swarm can detect a structural failure hours, or even days, before it escalates into a visible explosion.
-        """)
-
-# TAB 7: DATA LAKE
-with tabs[6]: 
+# TAB 6: DATA LAKE (Shifted from Tab 7)
+with tabs[5]: 
     @st.fragment(run_every=5)
     def live_data_lake():
         if st.session_state.pause_sync: return
@@ -439,7 +379,7 @@ with tabs[6]:
     with st.expander("📖 DEEP DIVE: NAVIGATING THE DATA LAKE", expanded=False):
         st.markdown("""
         ### 💾 The Raw Telemetry Backend
-        > **[WHAT IS IT?]** The unfiltered, high-speed Pandas/Polars dataframe. This matrix is the raw engine driving every 3D map, calculation, and visual metric on this dashboard.
+        > **[WHAT IS IT?]** The unfiltered, high-speed Pandas/Polars dataframe. This matrix is the raw engine driving every map, calculation, and visual metric on this dashboard.
 
         **📊 UNDERSTANDING THE MATRIX COLUMNS:**
         * `drone_id`: The unique MAC address and identifier of the physical edge node.
