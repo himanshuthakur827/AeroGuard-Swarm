@@ -264,7 +264,7 @@ with tabs[6]:
     st.dataframe(df_tel, use_container_width=True)
     st.markdown("<div class='info-box'><b>📌 DATA LAKE:</b><br>The raw Pandas/Polars dataframe logging every micro-transaction from the swarm. Used by backend engineers for post-incident crash forensics.</div>", unsafe_allow_html=True)
 
-# --- 7. AUTO-REFRESH (3.6 SECONDS) ---
+# --- 7. AUTO-REFRESH (5 SECONDS) ---
 if not pause_sync:
-    time.sleep(3.6)
+    time.sleep(5)
     st.rerun()
