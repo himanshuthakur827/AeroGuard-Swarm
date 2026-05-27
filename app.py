@@ -312,23 +312,31 @@ with tabs[0]:
             
     live_radar()
     
-    with st.expander("📖 DEEP DIVE: HOW TO READ THE 2D TACTICAL RADAR", expanded=False):
+    with st.expander("📖 DEEP DIVE: HOW TO READ THE 2D TACTICAL RADAR & THREAT MATRIX", expanded=False):
         st.markdown("""
-        ### 🌍 Live Geospatial Information System (GIS)
-        > **[WHAT IS IT?]** A real-time 2D topographical map rendered using Plotly Mapbox. It visualizes the exact physical latitude and longitude of every drone over a highly detailed real-world map grid showing terrain, roads, and infrastructure.
-        
-        **🕹️ MAP CONTROLS:**
-        * **Zoom:** Use your mouse scroll wheel to zoom in/out. (The map is fully integrated, leaving plenty of safe space on the right to scroll normally without trapping your cursor).
-        * **Pan:** Left-click and drag to move across the map.
-        * **Hover:** Place your cursor over any circular node to read the exact drone ID and the raw thermal telemetry extracted from that GPS coordinate.
-        
-        **📊 UNDERSTANDING THE VISUAL SYMBOLS (Nodes):**
-        * **The Nodes (Circles):** Each circle represents a physical drone hovering over a specific geographical sector of the petroleum infrastructure.
-        * **Size (Radius):** Represents the *Thermal Intensity*. A larger circle indicates an algorithmic amplification of heat at that exact spot.
-        * **Color Gradient (Dark/Purple to Bright Yellow/White):** Represents the *Threat Level*. Darker colors signify normal ambient heat. Bright Yellow/White signifies a Z-Score mathematical anomaly (a statistically severe deviation indicating a potential fire or pipeline rupture).
-        
-        **💡 WHY IT MATTERS IN DEPLOYMENT:**
-        In a massive 100-kilometer petroleum refinery, raw spreadsheets are useless. This 2D mapping allows a single Incident Commander to instantly identify the largest, brightest node and dispatch ground fire-teams directly to that GPS coordinate.
+        ### 🌍 Live Geospatial Information System (GIS) & Swarm Matrix
+        > **[WHAT IS IT?]** This tab acts as the primary "Command & Control" (C2) interface for the Incident Commander. It combines a real-time 2D topographical Plotly Mapbox with an asynchronous, mathematically sorted "Swarm Threat Matrix" table. 
+
+        **🕹️ 2D TACTICAL MAP CONTROLS & NAVIGATION:**
+        * **Zoom & Pan:** Use the scroll wheel to zoom and left-click to drag the map. *(Pro Tip: Notice the "Safe Scroll Zone" on the right—use that empty space to scroll down the webpage without accidentally zooming the map and trapping your cursor).*
+        * **Hover Telemetry:** Hovering over any circular node instantly displays the physical MAC address (Drone ID) and its live temperature reading without needing to cross-reference the database.
+
+        **📊 UNDERSTANDING THE MAP SYMBOLS & INFERNO COLOR SCALE:**
+        * **The Nodes (Circles):** Every circle represents a physical edge-compute drone maintaining a GPS hover-hold over a designated pipeline sector.
+        * **Size (Radius Expansion):** The physical size of the circle on the map is directly linked to its *Thermal Payload*. If a pipe gets dangerously hot, the circle swells up on the screen, drawing the operator's eye immediately.
+        * **Color Gradient (The 'Inferno' Scale):** The map uses an 'Inferno' thermal gradient.
+            * *Dark Purple/Black:* Represents nominal, safe ambient temperatures.
+            * *Orange/Red:* Represents a rising heat signature that requires monitoring.
+            * *Bright Yellow/White (Glowing):* Represents a severe Z-Score mathematical anomaly (A statistically impossible heat spike, confirming a fire or friction rupture).
+
+        **📋 THE LIVE SWARM THREAT MATRIX (The 3 Tables):**
+        > **[HOW IT WORKS]** Below the map, the system actively sorts every single drone into three operational categories based on their live Z-Score (Standard Deviation from the mean). This matrix updates asynchronously every 5 seconds.
+        * **🔴 FULL THREAT (CRITICAL):** Drones whose Z-Score has physically breached the threshold you set in the sidebar. These are active emergency zones. Human fire-teams are dispatched *only* to these nodes.
+        * **🟡 CAN BE THREAT (ELEVATED):** Drones whose Z-Score is at 70% to 99% of the threshold. This is the "Early Warning" system. A pipe heating up in the midday sun might sit here, but if it crosses 100%, it shifts instantly to the Critical column.
+        * **🟢 NO THREAT (SECURE):** Safe, nominal operations. These nodes are completely ignored by the Incident Commander during a high-stress emergency to prevent cognitive overload.
+
+        **💡 WHY THIS DUAL-VIEW ARCHITECTURE MATTERS IN DEPLOYMENT:**
+        In a massive 100-kilometer petroleum refinery, looking at a map with 500 drones can cause panic. The 2D Map gives the *Geographical Context* (Where is the fire?), while the Threat Matrix table gives the *Categorical Context* (Who is in danger?). By instantly filtering out the 'Green' safe drones, human operators can focus 100% of their attention on the 'Red' critical column.
         """)
 
 # TAB 2: MATH ENGINE
