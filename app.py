@@ -193,20 +193,30 @@ def fetch_telemetry():
         })
     return pd.DataFrame(data)
 
-# --- 5. THE UNIFIED LIVE FRAGMENT (FIXES TAB LAG) ---
-# Putting the entire dashboard content inside ONE fragment ensures tabs switch instantly (frontend only)
-# while the data quietly updates in the background every 5 seconds.
+# --- 5. THE UNIFIED LIVE FRAGMENT ---
 @st.fragment(run_every=5)
 def render_live_dashboard():
     # --- HEADER & METRICS ---
     st.title("🛰️ AeroGuard V19: Command Center")
 
-    st.warning("⚠️ **SIMULATION MODE ACTIVE: HARDWARE STANDBY**\n\n**[WHY?]** Physical edge-equipment (Drones, Thermal Cameras) are currently disconnected. The system is running a high-fidelity synthetic payload algorithm to demonstrate the mathematical and visual architecture. In a real deployment, this exact interface ingests live MQTT JSON packets directly from the hardware.")
+    # 🔥 NEW ELABORATED DISCLAIMER BANNER 🔥
+    st.markdown("""
+    <div style="background: rgba(245, 158, 11, 0.15); border-left: 5px solid #f59e0b; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+        <h3 style="color: #f59e0b; margin-top: 0;">⚠️ SYSTEM NOTICE: SYNTHETIC SIMULATION MODE ACTIVE</h3>
+        <p style="color: #cbd5e1; margin-bottom: 15px; font-size: 1.05rem; line-height: 1.6;">
+        <b>[CURRENT ARCHITECTURE STATUS]</b><br> Physical edge-computing nodes (RTK-GPS Drones, FLIR Thermal Cameras, Pitot Tubes, and Acoustic Sensors) are currently disconnected from this active browser session. <br><br>
+        <b>[WHAT YOU ARE SEEING]</b><br> To demonstrate the mathematical integrity, visual UX architecture, and algorithmic processing of this command center, the backend is currently running a high-fidelity synthetic data generator. It simulates real-world pipeline telemetry (heat flux, GPS vectors, hardware battery) dynamically.<br><br>
+        <b>[REAL-WORLD DEPLOYMENT PIPELINE]</b><br> In an active industrial or petroleum refinery scenario, this exact dashboard architecture will ingest live MQTT JSON payloads directly from the drone swarm. The math engine, 3D radar, and AI vision will seamlessly transition to processing real infrastructure metrics without altering the core codebase.<br><br>
+        </p>
+        <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 5px; border: 1px dashed #f59e0b;">
+        <i><b>👨‍💻 DEPLOYMENT INSTRUCTION:</b> Once physical equipment is successfully linked via the backend Supabase/MQTT bridge, this entire simulation disclaimer must be safely removed from the app.py source code.</i>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     if st.session_state.pause_sync:
         st.info("⏸️ Telemetry Sync Paused by Operator. Dashboard Locked.")
-        # We don't return here so the user can still use Tabs. We just don't fetch new data.
-        df_tel = fetch_telemetry() # Will return cached old data
+        df_tel = fetch_telemetry() 
     else:
         df_tel = fetch_telemetry()
         
@@ -232,16 +242,28 @@ def render_live_dashboard():
     tabs = st.tabs(["🌍 3D RADAR", "🧮 MATH ENGINE", "⚙️ HARDWARE MATRIX", "👁️ NEURAL AI", "💨 THERMODYNAMICS", "🎧 ACOUSTICS", "💾 DATA LAKE"])
 
     with tabs[0]: 
-        layer = pdk.Layer("HexagonLayer", latest, get_position=["longitude", "latitude"], auto_highlight=True, elevation_scale=50, pickable=True, elevation_range=[0, 3000], extruded=True, coverage=1)
-        st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=pdk.ViewState(longitude=77.166, latitude=31.104, zoom=11, pitch=50, bearing=-27), map_style=map_style))
+        # 🔥 FIX: Map is now on the left (75%), and right side (25%) is empty for safe scrolling!
+        map_col, safe_scroll_col = st.columns([3, 1])
         
+        with map_col:
+            # Slightly reduced elevation_scale to make the map render faster (Lag Fix)
+            layer = pdk.Layer("HexagonLayer", latest, get_position=["longitude", "latitude"], auto_highlight=True, elevation_scale=40, pickable=True, elevation_range=[0, 3000], extruded=True, coverage=1)
+            st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=pdk.ViewState(longitude=77.166, latitude=31.104, zoom=10.5, pitch=45, bearing=-27), map_style=map_style), use_container_width=True)
+            
+        with safe_scroll_col:
+            st.markdown("""
+            <div style='text-align:center; padding-top: 150px; color: #64748b; font-size: 0.9rem;'>
+                <i>↕️ Use this blank zone to scroll down the page without zooming the map.</i>
+            </div>
+            """, unsafe_allow_html=True)
+            
         with st.expander("📖 DEEP DIVE: HOW TO READ THE 3D RADAR & SYMBOLS", expanded=False):
             st.markdown("""
             ### 🌍 Live Geospatial Information System (GIS)
             > **[WHAT IS IT?]** A real-time 3D topographical map rendered using PyDeck. It visualizes the exact physical latitude and longitude of every drone over a highly detailed real-world map grid showing terrain, roads, and cities.
             
             **🕹️ MAP CONTROLS:**
-            * **Zoom:** Mouse scroll wheel to zoom in/out. If the map traps your cursor, scroll on the edge of your screen.
+            * **Zoom:** Mouse scroll wheel to zoom in/out. (Use the right-side safe zone to scroll the page).
             * **Pan:** Left-click and drag to move across the map.
             * **Tilt & Rotate (3D View):** Hold `SHIFT` + Left-click and drag. This allows you to view the pillars from a horizontal, ground-level perspective.
             * **Hover:** Place your cursor over any pillar to read the exact numerical telemetry extracted from that GPS coordinate.
@@ -283,7 +305,8 @@ def render_live_dashboard():
     with tabs[2]: 
         c_hw1, c_hw2 = st.columns(2)
         with c_hw1:
-            x_val = np.linspace(0, 10, 50); y_val = np.linspace(0, 10, 50); X, Y = np.meshgrid(x_val, y_val)
+            # 🔥 LAG FIX: Reduced matrix resolution from 50x50 to 30x30 to save WebGL memory
+            x_val = np.linspace(0, 10, 30); y_val = np.linspace(0, 10, 30); X, Y = np.meshgrid(x_val, y_val)
             Z = np.sin(X) * np.cos(Y) * pid_p 
             fig_3d = go.Figure(data=[go.Surface(z=Z, colorscale='Viridis')])
             fig_3d.update_layout(title="IMU Vibration Matrix", paper_bgcolor="rgba(0,0,0,0)", font_color=text, height=350, margin=dict(l=0, r=0, t=30, b=0))
@@ -349,7 +372,8 @@ def render_live_dashboard():
             """)
 
     with tabs[4]: 
-        x = np.linspace(-3, 3, 100); y = np.linspace(-3, 3, 100); X, Y = np.meshgrid(x, y)
+        # 🔥 LAG FIX: Reduced array size from 100 to 50 for much faster background rendering
+        x = np.linspace(-3, 3, 50); y = np.linspace(-3, 3, 50); X, Y = np.meshgrid(x, y)
         Z = np.exp(-(X**2 + Y**2)) 
         Z_smoothed = gaussian_filter(Z + 0.1 * np.random.randn(*Z.shape), sigma=1.5)
         fig_cont = go.Figure(data=go.Contour(z=Z_smoothed, colorscale='Inferno', contours=dict(showlabels=True)))
