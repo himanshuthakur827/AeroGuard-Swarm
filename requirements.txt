@@ -9,3 +9,4 @@ scipy
 ultralytics
 easyocr
 Pillow
+opencv-python-headless
