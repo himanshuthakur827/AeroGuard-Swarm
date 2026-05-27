@@ -56,11 +56,13 @@ st.markdown(f"""
         border: 1px solid rgba(148, 163, 184, 0.2); border-top: 3px solid {accent};
         border-radius: 12px; padding: 25px; margin-bottom: 20px;
     }}
-    .info-box {{ background: rgba(37, 99, 235, 0.05); border-left: 4px solid {accent}; padding: 20px; border-radius: 5px; font-size: 0.95rem; margin-top: 15px; line-height: 1.7; color: {text}; border-right: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);}}
     .metric-title {{font-size: 0.9rem; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 1.5px;}}
     .metric-value {{font-size: 2.5rem; color: {text}; font-weight: 700; margin-top: 5px;}}
     .stTabs [data-baseweb="tab"] {{color: {text}; font-weight: 600; font-size: 15px; background: transparent;}}
     .stTabs [aria-selected="true"] {{color: {accent} !important; border-bottom: 3px solid {accent} !important; background: rgba(0, 255, 204, 0.05);}}
+    
+    /* Native Expander Styling for beautiful transitions */
+    .streamlit-expanderHeader {{font-weight: 600 !important; color: {accent} !important; font-size: 1.1rem !important;}}
     </style>
 """, unsafe_allow_html=True)
 
@@ -69,7 +71,6 @@ if not st.session_state.auth:
     st.markdown("<br><br><br><br>", unsafe_allow_html=True)
     st.markdown(f"<div style='text-align:center;'><h1>🔒 AEROGUARD SYSTEM LOCKED</h1><p style='color:#94a3b8; font-size:1.2rem;'>SECURE ENCRYPTED UPLINK REQUIRED.</p></div>", unsafe_allow_html=True)
     with st.sidebar.expander("🔌 Connect Uplink", expanded=True): 
-        # PRE-FILLED PASSWORD LOGIC HERE
         st.info("💡 Passcode is pre-filled for demonstrational access.")
         pwd = st.text_input("Clearance Code", type="password", value="admin")
         if st.button("AUTHENTICATE UPLINK"):
@@ -79,84 +80,41 @@ if not st.session_state.auth:
                 st.error("Access Denied.")
     st.stop() 
 
-# --- 3. SIDEBAR WITH EXTREME DETAIL TOOLTIPS ---
+# --- 3. SIDEBAR WITH TOOLTIPS ---
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/9132/9132074.png", width=90)
     st.markdown("## ⚙️ GLOBAL COMMAND")
     
     st.markdown("---")
     
-    enable_siren = st.checkbox("🔊 Enable Siren Alarm", value=False, help="""
-    [SYMBOL 🔊] Represents Audio Output.
-    [WHAT] A physical HTML5 audio trigger connected to the anomaly detection logic.
-    [WHY] Visual alerts on a screen can be missed if an operator is looking away. Audio creates an immediate psychological response.
-    [HOW IT WORKS] If the live Z-Score of any drone exceeds the set threshold, it mathematically executes the audio script.
-    [HOW TO USE] Leave unchecked during data review. Check this box ONLY during active pipeline containment missions.
-    """)
+    enable_siren = st.checkbox("🔊 Enable Siren Alarm", value=False, help="Triggers physical HTML5 audio output if a Z-Score thermal anomaly is breached. Used to prevent operator alarm fatigue.")
     
-    pause_sync = st.checkbox("⏸️ Pause Live Sync", value=False, key="pause_sync", help="""
-    [SYMBOL ⏸️] Represents System Freeze/Hold.
-    [WHAT] A manual override that halts the 5-second asynchronous cloud refresh loop (@st.fragment).
-    [WHY] When you upload a custom pipeline image for Neural AI scanning, a background refresh will wipe your upload.
-    [HOW IT WORKS] Bypasses the backend Polars data-fetch cycle, locking all metrics in their current state.
-    [HOW TO USE] Check this box before interacting with the "Neural Vision" tab or analyzing a specific anomaly peak.
-    """)
+    pause_sync = st.checkbox("⏸️ Pause Live Sync", value=False, key="pause_sync", help="Halts the 5-second async loop. Crucial when uploading images so the page doesn't refresh mid-upload.")
     
     with st.expander("🌐 UI & Region Setup"):
-        st.session_state.lang = st.selectbox("Interface Language", ["EN", "HI"], index=["EN", "HI"].index(st.session_state.lang), help="[WHAT] JSON Dictionary mapping for localization. Allows rapid deployment in different international jurisdictions.")
-        
-        # THEME TOGGLE (Changes apply instantly via st.rerun)
-        new_theme = st.selectbox("UI Mode", ["Dark (Cyber)", "Light (Clean)"], index=["Dark (Cyber)", "Light (Clean)"].index(st.session_state.theme), help="[WHAT] CSS Injection. Dark mode reduces glare in dim command centers; Light mode is for field tablets under direct sunlight.")
+        st.session_state.lang = st.selectbox("Interface Language", ["EN", "HI"], index=["EN", "HI"].index(st.session_state.lang))
+        new_theme = st.selectbox("UI Mode", ["Dark (Cyber)", "Light (Clean)"], index=["Dark (Cyber)", "Light (Clean)"].index(st.session_state.theme))
         if new_theme != st.session_state.theme:
             st.session_state.theme = new_theme
             st.rerun()
-            
         unit_sys = st.radio("Measurement System", ["Metric", "Imperial"])
 
     with st.expander("🧮 Mathematical Fire Spread"):
-        spread_alg = st.selectbox("Spread Algorithm", ["Rothermel Equation", "Huygens Principle"], help="""
-        [WHAT] The core predictive math models.
-        [WHY] Rothermel computes surface-level spread (good for spilled oil). Huygens calculates elliptical growth (good for high-pressure gas clouds).
-        [HOW TO USE] Select based on the type of industrial leak detected.
-        """)
-        
-        z_thresh = st.slider("Anomaly Z-Score (σ)", 1.0, 5.0, 2.5, help="""
-        [WHAT] Statistical Standard Deviation (Sigma σ) threshold.
-        [WHY] A metal pipeline in the desert is naturally hot. A fixed temperature alarm would constantly trigger falsely. Z-Score detects sudden *changes* from the normal environment.
-        [HOW IT WORKS] Alert triggers if: Live Temp > (Rolling Mean + (Z * Standard Deviation)).
-        """)
-        
-        calc_dt = st.number_input("Calculus Δt (Seconds)", 0.1, 5.0, 1.0, help="""
-        [WHAT] The 'Delta Time' (Δt) denominator for calculating physical derivatives.
-        [WHY] Limits the time-step for the Thermal Flux calculation (∂T/∂t).
-        [HOW TO USE] Must strictly match the Hertz (Hz) refresh rate of your physical FLIR thermal cameras.
-        """)
+        spread_alg = st.selectbox("Spread Algorithm", ["Rothermel Equation", "Huygens Principle"])
+        z_thresh = st.slider("Anomaly Z-Score (σ)", 1.0, 5.0, 2.5)
+        calc_dt = st.number_input("Calculus Δt (Seconds)", 0.1, 5.0, 1.0)
 
     with st.expander("⚙️ Hardware: Flight & Tuning"):
-        pid_p = st.slider("Proportional Gain (kP)", 0.0, 2.0, 0.5, help="""
-        [WHAT] The primary 'P' value in the PID (Proportional-Integral-Derivative) flight controller.
-        [WHY] Stops the drone from drifting away from the pipeline during heavy crosswinds.
-        [HOW IT WORKS] Applies corrective motor voltage directly proportional to the GPS error margin.
-        """)
-        
-        kalman_q = st.number_input("Kalman Process Noise", 0.001, 0.1, 0.01, format="%.3f", help="""
-        [WHAT] Statistical filtering matrix.
-        [WHY] Drone rotors cause intense vibrations, making raw GPS data jumpy.
-        [HOW IT WORKS] The Kalman filter mathematically predicts the true position by filtering out the 'Process Noise' variance.
-        """)
+        pid_p = st.slider("Proportional Gain (kP)", 0.0, 2.0, 0.5)
+        kalman_q = st.number_input("Kalman Process Noise", 0.001, 0.1, 0.01, format="%.3f")
 
     with st.expander("📡 Hardware: Telemetry & Radio"):
-        lora_sf = st.select_slider("LoRa Spreading Factor", [7, 8, 9, 10, 11, 12], value=10, help="""
-        [WHAT] The physical duration of a radio 'chirp' in the LoRaWAN protocol.
-        [WHY] Balances data speed vs. signal range.
-        [HOW TO USE] SF7 = Fast data, low range. SF12 = Slow data, but the signal will punch through concrete refinery walls and dense forests.
-        """)
-        
-        tx_power = st.slider("Transmit Power (dBm)", 2, 20, 14, help="[WHAT] Antenna transmission wattage. 20dBm pushes max electrical power into the antenna for Beyond Visual Line of Sight (BVLOS) operations.")
+        lora_sf = st.select_slider("LoRa Spreading Factor", [7, 8, 9, 10, 11, 12], value=10)
+        tx_power = st.slider("Transmit Power (dBm)", 2, 20, 14)
         
     with st.expander("💨 Physics: Environment"):
-        wind_spd = st.slider("Wind Vector (km/h)", 0, 120, 25, help="[WHAT] Environmental input. [WHY] Wind is the #1 variable that dictates which direction a toxic gas cloud or fire will travel.")
-        solar_irr = st.slider("Solar Irradiance (W/m²)", 0, 1200, 800, help="[WHAT] Sun radiation. [WHY] Subtracted from the total thermal payload to isolate the actual pipeline heat.")
+        wind_spd = st.slider("Wind Vector (km/h)", 0, 120, 25)
+        solar_irr = st.slider("Solar Irradiance (W/m²)", 0, 1200, 800)
 
     if st.button("🔴 DISCONNECT"): 
         st.session_state.auth = False; st.rerun()
@@ -181,22 +139,13 @@ latest_main = df_main.sort_values('created_at').groupby('drone_id').last().reset
 # --- 5. DASHBOARD HEADER ---
 st.title("🛰️ AeroGuard V19: Command Center")
 
-st.markdown("""
-<div style="background: rgba(245, 158, 11, 0.15); border-left: 5px solid #f59e0b; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
-    <h4 style="color: #f59e0b; margin-top: 0;">⚠️ SIMULATION MODE ACTIVE: HARDWARE STANDBY</h4>
-    <p style="color: #cbd5e1; margin-bottom: 0;">
-    <b>[WHY ARE YOU SEEING THIS?]</b> Because physical edge-equipment (RTK-GPS Drones, FLIR Thermal Cameras, Pitot Tubes) are currently disconnected from this browser session.<br>
-    <b>[WHAT IS HAPPENING?]</b> The system is running a high-fidelity synthetic payload algorithm to demonstrate the mathematical and visual architecture of the command center.<br>
-    <b>[REAL WORLD DEPLOYMENT]</b> In a live petroleum/industrial scenario, this exact interface will ingest live MQTT JSON packets directly from the hardware swarm, replacing this synthetic array with real-world infrastructure metrics.
-    </p>
-</div>
-""", unsafe_allow_html=True)
+st.warning("⚠️ **SIMULATION MODE ACTIVE: HARDWARE STANDBY**\n\n**[WHY?]** Physical edge-equipment (Drones, Thermal Cameras) are currently disconnected. The system is running a high-fidelity synthetic payload algorithm to demonstrate the mathematical and visual architecture. In a real deployment, this exact interface ingests live MQTT JSON packets directly from the hardware.")
 
 # ANTI-LAG MAGIC: Background Dashboard Updater
 @st.fragment(run_every=5)
 def live_dashboard_metrics():
     if st.session_state.pause_sync:
-        st.warning("⏸️ Telemetry Sync Paused by Operator. Dashboard Locked.")
+        st.info("⏸️ Telemetry Sync Paused by Operator. Dashboard Locked.")
         return
 
     df_tel = fetch_telemetry()
@@ -234,27 +183,25 @@ with tabs[0]:
         st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=pdk.ViewState(longitude=77.166, latitude=31.104, zoom=11, pitch=50, bearing=-27), map_style=map_style))
     live_radar()
     
-    st.markdown("""
-    <div class='info-box'>
-        <h3 style="margin-top:0; color:#2563eb;">🌍 EXTREME DETAIL: HOW TO READ THE 3D RADAR</h3>
-        <b>[WHAT IS IT?]</b><br>
-        This is a live Geospatial Information System (GIS) rendered using PyDeck. It visualizes the physical latitude and longitude of every drone in the swarm overlaying a real-world map grid.<br><br>
+    with st.expander("📖 DEEP DIVE: HOW TO READ THE 3D RADAR & SYMBOLS", expanded=False):
+        st.markdown("""
+        ### 🌍 Live Geospatial Information System (GIS)
+        > **[WHAT IS IT?]** A real-time 3D topographical map rendered using PyDeck. It visualizes the exact physical latitude and longitude of every drone in the swarm over a real-world map grid.
         
-        <b>[MAP CONTROLS - HOW TO USE]</b><br>
-        • <b>Zoom:</b> Use your mouse scroll wheel to zoom in/out of the terrain.<br>
-        • <b>Pan:</b> Left-click and drag to move across the map.<br>
-        • <b>Tilt & Rotate (3D View):</b> Hold down the <b>SHIFT</b> key + Left-click and drag. This allows you to look at the pillars from a horizontal ground-level perspective.<br>
-        • <b>Hover:</b> Place your mouse over any pillar to read the exact raw numerical data extracted from that coordinate.<br><br>
+        **🕹️ MAP CONTROLS:**
+        * **Zoom:** Mouse scroll wheel to zoom in/out of the terrain.
+        * **Pan:** Left-click and drag to move across the map.
+        * **Tilt & Rotate (3D View):** Hold `SHIFT` + Left-click and drag. This allows you to view the pillars from a horizontal, ground-level perspective.
+        * **Hover:** Place your cursor over any pillar to read the exact numerical telemetry extracted from that GPS coordinate.
         
-        <b>[UNDERSTANDING THE PILLARS (Hexagons)]</b><br>
-        • <b>Shape:</b> The map is divided into a Hexagonal grid. Each Hexagon represents a specific geographical sector (e.g., Sector 4 of the main oil pipeline).<br>
-        • <b>Height (Elevation):</b> The physical height of the pillar represents <i>Data Density</i>. A massive, towering pillar means either multiple drones are clustered in that exact spot, or the algorithmic temperature weight is extremely high.<br>
-        • <b>Color Gradient (Yellow to Red):</b> Represents the Threat Level. Yellow signifies normal operational ambient heat. Deep Red signifies a Z-Score mathematical anomaly—meaning the temperature here is statistically impossible under normal conditions (indicating a fire or friction leak).<br><br>
+        **📊 UNDERSTANDING THE VISUAL SYMBOLS:**
+        * **The Hexagons (Pillars):** The map is divided into a geometric grid. Each pillar represents a specific geographical sector of the petroleum infrastructure.
+        * **Height (Elevation):** Represents *Data Density*. A towering pillar indicates either a dense cluster of drones at that spot or an algorithmic amplification of temperature.
+        * **Color Gradient (Yellow 🟡 to Red 🔴):** Represents the *Threat Level*. Yellow signifies normal ambient heat. Deep Red signifies a Z-Score mathematical anomaly (a statistically severe deviation indicating a potential fire or friction leak).
         
-        <b>[WHY IS IT IMPORTANT?]</b><br>
-        In a massive 100-kilometer petroleum refinery, reading raw numbers takes too long. This 3D mapping allows a single human operator to instantly identify the tallest, reddest pillar and immediately dispatch ground fire-teams to that exact GPS coordinate.
-    </div>
-    """, unsafe_allow_html=True)
+        **💡 WHY IT MATTERS IN DEPLOYMENT:**
+        In a massive 100-kilometer petroleum refinery, raw spreadsheets are too slow. This 3D mapping allows a single Incident Commander to instantly identify the tallest, reddest pillar and dispatch ground fire-teams to that exact location.
+        """)
 
 # TAB 2: MATH ENGINE
 with tabs[1]: 
@@ -276,24 +223,20 @@ with tabs[1]:
         c_calc2.metric("Heat Flux Derivative (∂T/∂t)", f"{heat_flux_dt:.2f} °/sec", delta=f"Δt = {calc_dt}s", delta_color="inverse")
     live_math()
     
-    st.markdown("""
-    <div class='info-box'>
-        <h3 style="margin-top:0; color:#2563eb;">🧮 EXTREME DETAIL: THE MATH ENGINE</h3>
-        <b>[WHAT IS IT?]</b><br>
-        This engine actively runs Differential Calculus and the Rothermel Surface Spread Equation based on live inputs from the drones and your sidebar parameters.<br><br>
-        
-        <b>[RATE OF SPREAD (R)]</b><br>
-        • <b>What it does:</b> Calculates how fast a fire or toxic gas cloud is physically expanding along the ground, measured in meters per minute (m/min).<br>
-        • <b>How it works:</b> It takes a base fuel variable and multiplies it dynamically by the 'Wind Vector' you set in the sidebar. If you increase the wind speed, watch this number jump.<br><br>
-        
-        <b>[HEAT FLUX DERIVATIVE (∂T/∂t)]</b><br>
-        • <b>What it does:</b> Measures the exact rate of temperature change over a specific fraction of time (Delta t).<br>
-        • <b>Why it's critical:</b> A pipeline might be 100°C, which is safe if it's stable. But if it goes from 100°C to 110°C in one second, it will explode. The derivative (∂T/∂t) catches that sudden velocity of heat.<br><br>
-        
-        <b>[HOW TO USE IT]</b><br>
-        The CTO watches these numbers. We don't just want to know where the fire IS; we use this math to predict where the fire WILL BE in 30 minutes, allowing us to evacuate the exact sectors lying in its path.
-    </div>
-    """, unsafe_allow_html=True)
+    with st.expander("📖 DEEP DIVE: UNDERSTANDING THE MATH ENGINE", expanded=False):
+        st.markdown("""
+        ### 🧮 Live Predictive Physics
+        > **[WHAT IS IT?]** The system actively calculates Differential Calculus and the Rothermel Surface Spread Equation using live inputs from the drones and the Global Command sidebar.
+
+        **📈 KEY METRICS EXPLAINED:**
+        * **Rate of Spread (R):** Measured in *meters per minute (m/min)*. It calculates the physical expansion velocity of a fire or toxic gas cloud.
+            * *How it works:* It takes base fuel data and multiplies it dynamically by the 'Wind Vector' setting. Increase the wind in the sidebar, and watch this expansion rate surge.
+        * **Heat Flux Derivative (∂T/∂t):** Measures the precise rate of temperature change over a defined fraction of time (Delta t).
+            * *Why it's critical:* A pipeline operating at 100°C is safe if stable. But a jump from 100°C to 110°C in one second indicates an imminent explosion. The derivative catches this "velocity of heat".
+
+        **💡 HOW A CTO USES IT:**
+        We don't just track where the hazard *is*; we use this continuous calculus to predict where the hazard *will be* in 30 minutes, allowing for targeted evacuation of specific refinery sectors.
+        """)
 
 # TAB 3: HARDWARE MATRIX
 with tabs[2]: 
@@ -307,19 +250,19 @@ with tabs[2]:
     with c_hw2:
         st.markdown(f"<br><br><h3>📡 Radio Link Budget</h3><p style='font-size:1.2rem;'>Spreading Factor: <b style='color:{accent};'>SF{lora_sf}</b> | TX Power: <b style='color:{accent};'>{tx_power} dBm</b></p>", unsafe_allow_html=True)
     
-    st.markdown("""
-    <div class='info-box'>
-        <h3 style="margin-top:0; color:#2563eb;">⚙️ EXTREME DETAIL: HARDWARE MATRIX</h3>
-        <b>[THE 3D PLOT (VIBRATION MATRIX)]</b><br>
-        • <b>What is it:</b> A graphical representation of the drone's flight controller (PID).<br>
-        • <b>How to read it:</b> The X and Y flat axes represent the drone's tilt (Pitch and Roll). The Z-axis (peaks and valleys) represents the amount of electrical voltage the software is sending to the motors to correct the drone's balance.<br>
-        • <b>Interaction:</b> Go to the sidebar and increase the "Proportional Gain (kP)". You will see the waves in the graph become much sharper and taller. This means the drone is fighting the wind more aggressively.<br><br>
-        
-        <b>[RADIO LINK BUDGET]</b><br>
-        • <b>What is it:</b> Displays the physical configuration of the Long Range (LoRa) antennas.<br>
-        • <b>Why it's useful:</b> If drones are flying behind thick metal refinery structures, a standard radio link drops. The operator checks this tab to ensure the Spreading Factor (SF) is high enough to punch through steel obstacles.
-    </div>
-    """, unsafe_allow_html=True)
+    with st.expander("📖 DEEP DIVE: READING THE HARDWARE MATRIX", expanded=False):
+        st.markdown("""
+        ### ⚙️ Drone Flight & Communication Telemetry
+        > **[WHAT IS IT?]** A live diagnostic view of the physical forces acting on the drone swarm's hardware and radio equipment.
+
+        **🚁 THE VIBRATION MATRIX (3D Plot):**
+        * **Axes Representation:** The X and Y axes represent the drone's physical tilt (Pitch and Roll). The Z-axis (peaks and valleys) represents the electrical voltage dispatched to the motors to correct the drone's balance.
+        * **Interactive Test:** Go to the sidebar and increase the "Proportional Gain (kP)". The waves will become taller and sharper, representing the motors fighting crosswinds more aggressively.
+
+        **📻 RADIO LINK BUDGET:**
+        * **LoRa (Long Range) Spreading Factor:** Displays the physical configuration of the radio antennas.
+        * *Why it matters:* If a drone flies behind dense steel refinery pipes, standard Wi-Fi drops. The operator ensures the SF is high enough (SF10-SF12) to punch through solid obstacles at the cost of data speed.
+        """)
 
 # TAB 4: NEURAL AI
 with tabs[3]: 
@@ -346,26 +289,24 @@ with tabs[3]:
             cam = cam1 if i == 0 else cam2
             cam.markdown(f"""<div style="border: 2px solid #64748b; background: #000; height: 300px; position: relative; border-radius: 12px;"><div style="position: absolute; top: 15px; left: 15px; color: #64748b; font-family: monospace; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px;">NODE: {r['drone_id']} | EDGE-AI STANDBY</div><div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.1); font-size: 80px;">⌖</div></div>""", unsafe_allow_html=True)
     
-    st.markdown("""
-    <div class='info-box'>
-        <h3 style="margin-top:0; color:#2563eb;">👁️ EXTREME DETAIL: NEURAL AI CORE</h3>
-        <b>[WHAT IS IT?]</b><br>
-        A live computer vision inference engine powered by the YOLOv8 (You Only Look Once) architecture. It uses deep learning tensor weights to identify objects within raw pixel data.<br><br>
-        
-        <b>[HOW TO USE IT]</b><br>
-        1. Open the sidebar and check <b>"Pause Live Sync"</b> (Crucial: prevents the page from refreshing and wiping your file).<br>
-        2. Upload a custom image (e.g., a photo of a pipeline, a pressure gauge, or a fire).<br>
-        3. Click "Initialize Deep Learning Core".<br><br>
-        
-        <b>[HOW IT WORKS & WHAT IT WILL DO]</b><br>
-        • The code bypasses the cloud and pushes the image matrix through the loaded AI model (either your custom 'best.pt' or the default dataset).<br>
-        • It maps pixel probabilities. If it is mathematically confident that a shape is a hazard, it will literally draw a **Bounding Box** around the object on the image and print an alert.<br>
-        • If you upload a picture of plain water or an empty road, it will honestly report: <i>"System Normal: No anomalies detected"</i>. It does not fake alerts.<br><br>
-        
-        <b>[WHY IT IS IMPORTANT]</b><br>
-        Human operators get tired staring at 50 drone camera feeds for 12 hours straight. Humans miss micro-fractures in pipes. The Neural AI never sleeps and analyzes every single frame with mathematical precision.
-    </div>
-    """, unsafe_allow_html=True)
+    with st.expander("📖 DEEP DIVE: USING THE NEURAL AI CORE", expanded=False):
+        st.markdown("""
+        ### 👁️ Real-Time Computer Vision Inference
+        > **[WHAT IS IT?]** An active Edge-AI vision engine powered by the YOLOv8 (You Only Look Once) architecture. It uses PyTorch tensor weights to scan raw pixels for trained hazards.
+
+        **🛠️ HOW TO USE IT:**
+        1.  In the sidebar, verify **"Pause Live Sync"** is checked (this prevents the 5-second cloud loop from wiping your upload).
+        2.  Upload an image of pipeline infrastructure, a pressure gauge, or a fire event.
+        3.  Click *Initialize Deep Learning Core*.
+
+        **🧠 WHAT HAPPENS UNDER THE HOOD?**
+        * The algorithm processes the image matrix against your custom dataset (`best.pt`) or the default model.
+        * If it mathematically recognizes a hazard, it will render a physical **Bounding Box** over the anomaly and sound the alert.
+        * If the image is clean (e.g., normal pipes or an empty field), it will truthfully report: *"System Normal"*. It does not fake detections.
+
+        **💡 WHY IT REPLACES HUMAN OPERATORS:**
+        Humans experience fatigue when monitoring 50 drone feeds simultaneously, leading to missed micro-fractures in pipes. The Neural AI applies flawless mathematical scrutiny to every single frame without resting.
+        """)
 
 # TAB 5: THERMODYNAMICS
 with tabs[4]: 
@@ -376,20 +317,18 @@ with tabs[4]:
     fig_cont.update_layout(title="Thermal Dispersion Plume", paper_bgcolor='rgba(0,0,0,0)', font=dict(color=accent), height=400)
     st.plotly_chart(fig_cont, use_container_width=True)
     
-    st.markdown("""
-    <div class='info-box'>
-        <h3 style="margin-top:0; color:#2563eb;">💨 EXTREME DETAIL: THERMODYNAMIC PLUME</h3>
-        <b>[WHAT IS IT?]</b><br>
-        A Topographical Contour Map displaying the Gaussian distribution of expanding heat or toxic gases originating from a ruptured pipeline.<br><br>
-        
-        <b>[HOW TO READ IT & SYMBOL MEANINGS]</b><br>
-        • <b>The Colors (Inferno Scale):</b> The bright, glowing white/yellow center represents the exact origin of the leak (Point of maximum thermal toxicity). As the color fades to dark red and black, it represents cooling temperatures and safe air.<br>
-        • <b>The Concentric Rings (Lines):</b> These lines act like boundaries on a map. Each line represents a specific drop in temperature or gas concentration based on the Inverse Square Law.<br><br>
-        
-        <b>[WHY IT IS IMPORTANT & HOW IT IS USED]</b><br>
-        When a refinery explodes, you cannot send human teams running in blindly. The Incident Commander looks at this map to establish a "Safe Perimeter". They assign the red zones to robotic containment and the black zones to human evacuation staging areas.
-    </div>
-    """, unsafe_allow_html=True)
+    with st.expander("📖 DEEP DIVE: ANALYZING THERMODYNAMIC CONTOURS", expanded=False):
+        st.markdown("""
+        ### 💨 Heat & Gas Dispersion Topography
+        > **[WHAT IS IT?]** A 2D contour map mathematically forecasting the Gaussian distribution of expanding heat or toxic gas originating from a ruptured pipeline.
+
+        **🗺️ HOW TO READ THE SYMBOLS & COLORS:**
+        * **The Colors (Inferno Scale):** The brilliant white/yellow center pinpoints the exact origin of the leak (the point of maximum thermal/chemical toxicity). The fade into dark red and black represents the atmospheric cooling and dissipation into safe air.
+        * **The Concentric Rings (Iso-lines):** Similar to a geographic topographic map, each ring maps a boundary of equal temperature or gas concentration, dictated by the Inverse Square Law.
+
+        **💡 TACTICAL INCIDENT DEPLOYMENT:**
+        During a catastrophic refinery failure, Incident Commanders use this visual data to establish "Safe Perimeters." The inner bright zones are designated exclusively for robotic/drone containment, while the outer black zones dictate human evacuation staging areas.
+        """)
 
 # TAB 6: ACOUSTICS
 with tabs[5]:
@@ -399,15 +338,17 @@ with tabs[5]:
         if st.button("Run CNN-LSTM Frequency Analysis"):
             st.error("⚠️ ANOMALY DETECTED: High-Frequency Hissing (Match: Gas Leak Signature - 91%)")
             
-    st.markdown("""
-    <div class='info-box'>
-        <h3 style="margin-top:0; color:#2563eb;">🎧 EXTREME DETAIL: ACOUSTIC AI</h3>
-        <b>[WHAT IT IS & HOW IT WORKS]</b><br>
-        Thermal cameras can only see gas *after* a massive leak or fire. Acoustic AI processes live audio feeds from drone microphones, running them through a CNN-LSTM network to detect micro-hissing sounds (high-frequency audio waves) associated with hairline cracks in pressurized pipes.<br><br>
-        <b>[WHY IT IS IMPORTANT]</b><br>
-        It is the ultimate early-warning system. By "listening" to the pipeline, the swarm can detect a failure hours before it becomes a catastrophic visible explosion.
-    </div>
-    """, unsafe_allow_html=True)
+    with st.expander("📖 DEEP DIVE: ACOUSTIC FREQUENCY ANALYSIS", expanded=False):
+        st.markdown("""
+        ### 🎧 Auditory Early-Warning System
+        > **[WHAT IS IT?]** An auditory deep-learning network designed to process live audio feeds from drone microphones.
+
+        **🔍 THE SCIENCE BEHIND IT:**
+        Thermal cameras and visual AI are reactive—they only see gas *after* a massive leak or fire has started. The Acoustic AI utilizes a CNN-LSTM network to hunt for high-frequency micro-hissing sounds. 
+
+        **💡 WHY IT'S THE ULTIMATE SAFEGUARD:**
+        These specific acoustic frequencies are generated by microscopic hairline cracks in highly pressurized pipes. By "listening" to the infrastructure, the swarm can detect a structural failure hours, or even days, before it escalates into a visible, catastrophic explosion.
+        """)
 
 # TAB 7: DATA LAKE
 with tabs[6]: 
@@ -418,16 +359,16 @@ with tabs[6]:
         st.dataframe(df_tel, use_container_width=True)
     live_data_lake()
     
-    st.markdown("""
-    <div class='info-box'>
-        <h3 style="margin-top:0; color:#2563eb;">💾 EXTREME DETAIL: THE DATA LAKE</h3>
-        <b>[WHAT IS IT?]</b><br>
-        The raw, unfiltered Pandas/Polars dataframe backend. This is the exact matrix of numbers driving all the 3D maps and algorithms seen in the other tabs.<br><br>
-        <b>[WHAT DO THE COLUMNS MEAN?]</b><br>
-        • <b>drone_id:</b> The unique MAC address of the physical node.<br>
-        • <b>latitude & longitude:</b> Precision RTK-GPS coordinates parsed from JSON payloads.<br>
-        • <b>temperature & battery:</b> Hardware health logs.<br><br>
-        <b>[HOW IT IS USED]</b><br>
-        Operators rarely look at this tab. It is used exclusively by Data Scientists and Backend Engineers to perform "Crash Forensics" after a drone fails, allowing them to trace the exact millisecond a sensor malfunctioned.
-    </div>
-    """, unsafe_allow_html=True)
+    with st.expander("📖 DEEP DIVE: NAVIGATING THE DATA LAKE", expanded=False):
+        st.markdown("""
+        ### 💾 The Raw Telemetry Backend
+        > **[WHAT IS IT?]** The unfiltered, high-speed Pandas/Polars dataframe. This matrix is the raw engine driving every 3D map, calculation, and visual metric on this dashboard.
+
+        **📊 UNDERSTANDING THE MATRIX COLUMNS:**
+        * `drone_id`: The unique MAC address and identifier of the physical edge node.
+        * `latitude` & `longitude`: Precision RTK-GPS spatial coordinates parsed dynamically from JSON payloads.
+        * `temperature` & `battery`: Critical hardware health and payload logs.
+
+        **💡 PRIMARY USE CASE:**
+        Command Center operators rarely interact with this tab. It is an engineering sandbox used by Data Scientists and Backend Engineers to perform "Crash Forensics" after a system failure, allowing them to isolate the exact millisecond a sensor or node malfunctioned.
+        """)
