@@ -72,7 +72,9 @@ with st.sidebar:
     st.markdown("## ⚙️ GLOBAL COMMAND")
     
     enable_siren = st.checkbox("🔊 Enable Siren Alarm", value=False, help="[WHAT] Audio Hooter.\n[WHY] Prevents operator alarm fatigue.\n[HOW] Triggers HTML5 audio element on Z-Score breach.")
-    pause_sync = st.checkbox("⏸️ Pause Live Sync", value=False, help="[WHAT] Halts the 3.6s refresh loop.\n[WHY] Prevents the app from refreshing while you are uploading images or audio.")
+    
+    # Pause Sync ab Session State se jura hai taaki Fragments isko padh sakein
+    st.checkbox("⏸️ Pause Live Sync", value=False, key="pause_sync", help="[WHAT] Halts the 5s refresh loop.\n[WHY] Freezes telemetry data if operator wants to analyze a specific heat signature.")
     
     with st.expander("🧮 Mathematical Fire Spread"):
         spread_alg = st.selectbox("Spread Algorithm", ["Rothermel Equation", "Huygens Principle"], help="[WHAT] Physics logic engine.\n[WHY] Rothermel is best for surface fires, Huygens for crown fires.")
@@ -94,8 +96,8 @@ with st.sidebar:
     if st.button("🔴 DISCONNECT"): 
         st.session_state.auth = False; st.rerun()
 
-# --- 4. DATA ENGINE ---
-@st.cache_data(ttl=3.6)
+# --- 4. DATA ENGINE (Cached for speed) ---
+@st.cache_data(ttl=2.5) # Fast cache, taaki sab fragments ek hi data padhein
 def fetch_telemetry():
     np.random.seed(int(time.time() * 10) % 100)
     data = []
@@ -108,80 +110,90 @@ def fetch_telemetry():
         })
     return pd.DataFrame(data)
 
-df_tel = fetch_telemetry()
-latest = df_tel.sort_values('created_at').groupby('drone_id').last().reset_index()
-
-max_t = latest['temperature'].max()
-mean_temp = df_tel['temperature'].mean()
-std_temp = df_tel['temperature'].std()
-latest['live_z_score'] = (latest['temperature'] - mean_temp) / (std_temp + 0.0001)
-critical = len(latest[latest['live_z_score'] > z_thresh])
+# Main scope data (Fallback ke liye)
+df_main = fetch_telemetry()
+latest_main = df_main.sort_values('created_at').groupby('drone_id').last().reset_index()
 
 # --- 5. DASHBOARD HEADER ---
 st.title("🛰️ AeroGuard V19: Command Center")
 
-# 🚨 REAL-WORLD DISCLAIMER 🚨
 st.markdown("""
 <div style="background: rgba(245, 158, 11, 0.15); border-left: 5px solid #f59e0b; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
     <h4 style="color: #f59e0b; margin-top: 0;">⚠️ SIMULATION MODE ACTIVE: HARDWARE STANDBY</h4>
     <p style="color: #cbd5e1; margin-bottom: 0;">
-    <b>Why are you seeing this?</b> Because physical edge-equipment (RTK-GPS Drones, FLIR Thermal Cameras, Pitot Tubes) are currently disconnected. <br>
-    <b>What is happening?</b> The system is running a high-fidelity synthetic payload simulation to demonstrate system architecture. <br>
-    <b>In Real Deployment:</b> This exact interface will ingest live MQTT JSON packets directly from the hardware swarm, replacing this synthetic data with real-world infrastructure metrics.
+    <b>Why are you seeing this?</b> Because physical edge-equipment (RTK-GPS Drones, FLIR Thermal Cameras) are disconnected. <br>
+    <b>In Real Deployment:</b> This exact interface will ingest live MQTT JSON packets directly from the swarm, replacing this synthetic data with real-world infrastructure metrics.
     </p>
 </div>
 """, unsafe_allow_html=True)
 
-m1, m2, m3, m4 = st.columns(4)
-m1.markdown(f"<div class='glass-card'><div class='metric-title'>Active Edge Nodes</div><div class='metric-value'>{len(latest)}</div></div>", unsafe_allow_html=True)
-m2.markdown(f"<div class='glass-card'><div class='metric-title'>Thermal Peak</div><div class='metric-value' style='color: {'#ef4444' if critical>0 else accent};'>{max_t:.1f}°C</div></div>", unsafe_allow_html=True)
-m3.markdown(f"<div class='glass-card'><div class='metric-title'>Spread Vector</div><div class='metric-value'>{(wind_spd * 0.15):.2f} m/s</div></div>", unsafe_allow_html=True)
-m4.markdown(f"<div class='glass-card'><div class='metric-title'>Engine Latency</div><div class='metric-value'>12 ms</div></div>", unsafe_allow_html=True)
+# 🔥 ANTI-LAG MAGIC 1: Sirf upar ke 4 dabbo ko background mein update karega 🔥
+@st.fragment(run_every=5)
+def live_dashboard_metrics():
+    if st.session_state.pause_sync:
+        st.warning("⏸️ Telemetry Sync Paused by Operator")
+        return
 
-if critical > 0:
-    siren = """<audio autoplay loop controls style="height: 35px; width: 300px;"><source src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" type="audio/mpeg"></audio>""" if enable_siren else ""
-    st.markdown(f"<div class='glass-card' style='border-top-color:#ef4444; background:rgba(239, 68, 68, 0.1);'><h3 style='color:#ef4444 !important;'>🚨 CRITICAL ALERT TRIGGERED ({z_thresh}σ Breach)</h3>{siren}</div>", unsafe_allow_html=True)
+    df_tel = fetch_telemetry()
+    latest = df_tel.sort_values('created_at').groupby('drone_id').last().reset_index()
+    max_t = latest['temperature'].max()
+    mean_temp = df_tel['temperature'].mean()
+    std_temp = df_tel['temperature'].std()
+    
+    latest['live_z_score'] = (latest['temperature'] - mean_temp) / (std_temp + 0.0001)
+    critical = len(latest[latest['live_z_score'] > z_thresh])
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.markdown(f"<div class='glass-card'><div class='metric-title'>Active Edge Nodes</div><div class='metric-value'>{len(latest)}</div></div>", unsafe_allow_html=True)
+    m2.markdown(f"<div class='glass-card'><div class='metric-title'>Thermal Peak</div><div class='metric-value' style='color: {'#ef4444' if critical>0 else accent};'>{max_t:.1f}°C</div></div>", unsafe_allow_html=True)
+    m3.markdown(f"<div class='glass-card'><div class='metric-title'>Spread Vector</div><div class='metric-value'>{(wind_spd * 0.15):.2f} m/s</div></div>", unsafe_allow_html=True)
+    m4.markdown(f"<div class='glass-card'><div class='metric-title'>Engine Latency</div><div class='metric-value'>12 ms</div></div>", unsafe_allow_html=True)
+
+    if critical > 0:
+        siren = """<audio autoplay loop controls style="height: 35px; width: 300px;"><source src="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3" type="audio/mpeg"></audio>""" if enable_siren else ""
+        st.markdown(f"<div class='glass-card' style='border-top-color:#ef4444; background:rgba(239, 68, 68, 0.1);'><h3 style='color:#ef4444 !important;'>🚨 CRITICAL ALERT TRIGGERED ({z_thresh}σ Breach)</h3>{siren}</div>", unsafe_allow_html=True)
+
+live_dashboard_metrics()
 
 # --- 6. THE TABS ---
 tabs = st.tabs(["🌍 3D RADAR", "🧮 MATH ENGINE", "⚙️ HARDWARE MATRIX", "👁️ NEURAL AI", "💨 THERMODYNAMICS", "🎧 ACOUSTICS", "💾 DATA LAKE"])
 
-# TAB 1: 3D RADAR
+# TAB 1: 3D RADAR (Fragment)
 with tabs[0]: 
-    layer = pdk.Layer("HexagonLayer", latest, get_position=["longitude", "latitude"], auto_highlight=True, elevation_scale=50, pickable=True, elevation_range=[0, 3000], extruded=True, coverage=1)
-    st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=pdk.ViewState(longitude=77.166, latitude=31.104, zoom=11, pitch=50, bearing=-27)))
-    st.markdown("""
-    <div class='info-box'>
-        <b>📌 HOW TO READ THIS 3D MAP:</b><br>
-        • <b>WHAT IS IT?</b> A live Geospatial PyDeck mapping system representing drone locations and payload data.<br>
-        • <b>THE PILLARS (Hexagons):</b> Each pillar represents a physical geographical sector (e.g., a specific pipeline sector).<br>
-        • <b>PILLAR HEIGHT:</b> Indicates the density/concentration of data points. A taller pillar means multiple drones are clustered there or the temperature reading is mathematically amplified.<br>
-        • <b>PILLAR COLOR:</b> Transitions from Yellow to Red. Red indicates a severe thermal anomaly exceeding normal environmental heat.<br>
-        • <b>WHY IT'S USEFUL:</b> In a real petroleum refinery, operator simply looks for the tallest/reddest pillar to immediately dispatch human fire-teams.
-    </div>
-    """, unsafe_allow_html=True)
+    @st.fragment(run_every=5)
+    def live_radar():
+        if st.session_state.pause_sync: return
+        df_tel = fetch_telemetry()
+        latest = df_tel.sort_values('created_at').groupby('drone_id').last().reset_index()
+        layer = pdk.Layer("HexagonLayer", latest, get_position=["longitude", "latitude"], auto_highlight=True, elevation_scale=50, pickable=True, elevation_range=[0, 3000], extruded=True, coverage=1)
+        st.pydeck_chart(pdk.Deck(layers=[layer], initial_view_state=pdk.ViewState(longitude=77.166, latitude=31.104, zoom=11, pitch=50, bearing=-27)))
+    live_radar()
+    
+    st.markdown("""<div class='info-box'><b>📌 HOW TO READ THIS 3D MAP:</b><br>• <b>WHAT IS IT?</b> Live Geospatial PyDeck mapping.<br>• <b>PILLAR HEIGHT:</b> Indicates density/concentration of heat.<br>• <b>PILLAR COLOR:</b> Red indicates a severe thermal anomaly exceeding the normal threshold.</div>""", unsafe_allow_html=True)
 
-# TAB 2: MATH ENGINE
+# TAB 2: MATH ENGINE (Fragment)
 with tabs[1]: 
-    st.markdown("### 📊 DYNAMIC SPREAD CALCULUS")
-    base_ros = 0.5; wind_factor = wind_spd / 20.0; temp_factor = max_t / 50.0
-    calculated_ros = base_ros * (1 + wind_factor) * temp_factor
-    heat_flux_dt = (max_t - mean_temp) / calc_dt if calc_dt > 0 else 0
+    @st.fragment(run_every=5)
+    def live_math():
+        if st.session_state.pause_sync: return
+        df_tel = fetch_telemetry()
+        latest = df_tel.sort_values('created_at').groupby('drone_id').last().reset_index()
+        max_t = latest['temperature'].max()
+        mean_temp = df_tel['temperature'].mean()
+        
+        st.markdown("### 📊 DYNAMIC SPREAD CALCULUS")
+        base_ros = 0.5; wind_factor = wind_spd / 20.0; temp_factor = max_t / 50.0
+        calculated_ros = base_ros * (1 + wind_factor) * temp_factor
+        heat_flux_dt = (max_t - mean_temp) / calc_dt if calc_dt > 0 else 0
+        
+        c_calc1, c_calc2 = st.columns(2)
+        c_calc1.metric("Dynamic Rate of Spread (R)", f"{calculated_ros:.2f} m/min", delta=f"{wind_factor:.2f} Wind Factor")
+        c_calc2.metric("Heat Flux Derivative (∂T/∂t)", f"{heat_flux_dt:.2f} °/sec", delta=f"Δt = {calc_dt}s", delta_color="inverse")
+    live_math()
     
-    c_calc1, c_calc2 = st.columns(2)
-    c_calc1.metric("Dynamic Rate of Spread (R)", f"{calculated_ros:.2f} m/min", delta=f"{wind_factor:.2f} Wind Factor")
-    c_calc2.metric("Heat Flux Derivative (∂T/∂t)", f"{heat_flux_dt:.2f} °/sec", delta=f"Δt = {calc_dt}s", delta_color="inverse")
-    
-    st.markdown("""
-    <div class='info-box'>
-        <b>📌 UNDERSTANDING THE MATH ENGINE:</b><br>
-        • <b>WHAT IS IT?</b> Live mathematical equations (Rothermel & Calculus) processing sidebar inputs.<br>
-        • <b>RATE OF SPREAD (R):</b> Measured in meters/minute. Shows how fast a potential fire or gas cloud is physically moving. It dynamically changes as you adjust the <i>Wind Vector</i> in the sidebar.<br>
-        • <b>HEAT FLUX (∂T/∂t):</b> First derivative of temperature over time. It tells us how rapidly the pipe is heating up per second.<br>
-        • <b>WHY IT'S USEFUL:</b> Prediction. We don't just want to know where the leak IS, we use this math to predict where the leak WILL BE in 10 minutes to evacuate that zone.
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("""<div class='info-box'><b>📌 MATH ENGINE:</b><br>• <b>RATE OF SPREAD (R):</b> Shows how fast a fire/gas cloud is moving physically. Dynamically scales with Wind Vector.<br>• <b>HEAT FLUX (∂T/∂t):</b> How rapidly the pipe is heating up per second. Predicts explosions.</div>""", unsafe_allow_html=True)
 
-# TAB 3: HARDWARE MATRIX
+# TAB 3: HARDWARE MATRIX (Static)
 with tabs[2]: 
     c_hw1, c_hw2 = st.columns(2)
     with c_hw1:
@@ -192,19 +204,11 @@ with tabs[2]:
         st.plotly_chart(fig_3d, use_container_width=True)
     with c_hw2:
         st.markdown(f"<br><br><h3>📡 Radio Link Budget</h3><p>Spreading Factor: <b>SF{lora_sf}</b> | TX Power: <b>{tx_power} dBm</b></p>", unsafe_allow_html=True)
+    st.markdown("<div class='info-box'><b>📌 HARDWARE MATRIX:</b><br>• <b>VIBRATION MATRIX:</b> Z-axis represents corrective motor voltage from PID. Increasing Gain in sidebar makes it aggressive.<br>• <b>RADIO:</b> High LoRa SF gives massive physical signal penetration.</div>", unsafe_allow_html=True)
 
-    st.markdown("""
-    <div class='info-box'>
-        <b>📌 HOW TO READ THE HARDWARE MATRIX:</b><br>
-        • <b>THE 3D PLOT (Vibration Matrix):</b> The X and Y axes represent the drone's physical tilt (pitch and roll). The Z-axis (peaks and valleys) represents the corrective motor voltage applied by the PID controller. If you increase 'PID Gain' in the sidebar, the waves become taller (more aggressive motor correction).<br>
-        • <b>RADIO LINK:</b> Shows the current LoRa radio strength. Higher SF values mean slower data but massive physical penetration through concrete/trees.<br>
-        • <b>WHY IT'S USEFUL:</b> Gives the CTO/Engineer an immediate visual check if the drone swarm is physically struggling to fly in bad weather.
-    </div>
-    """, unsafe_allow_html=True)
-
-# TAB 4: NEURAL AI
+# TAB 4: NEURAL AI (🚨 MAGIC: Ye ab refresh nahi hoga, Photo upload ekdum safe hai! 🚨)
 with tabs[3]: 
-    uploaded_file = st.file_uploader("📸 UPLOAD CUSTOM DRONE IMAGERY (Enable 'Pause Live Sync' first!)", type=["jpg", "png", "jpeg"])
+    uploaded_file = st.file_uploader("📸 UPLOAD CUSTOM DRONE IMAGERY", type=["jpg", "png", "jpeg"])
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
         if st.button("Initialize Deep Learning Core"):
@@ -221,18 +225,14 @@ with tabs[3]:
                         st.success("✅ System Normal: No anomalies detected in this frame.")
                 else:
                     st.warning("AI Model failed to load.")
-    
-    st.markdown("""
-    <div class='info-box'>
-        <b>📌 HOW TO USE NEURAL AI:</b><br>
-        • <b>WHAT IS IT?</b> An active Edge-AI inference engine using YOLOv8.<br>
-        • <b>HOW TO USE:</b> 1. Check 'Pause Live Sync' in sidebar. 2. Upload an image of a pipeline/fire. 3. Click Initialize. <br>
-        • <b>HOW IT WORKS:</b> It uses PyTorch tensor weights (either 'best.pt' custom dataset or 'yolov8n.pt' default) to scan pixel arrays. It draws bounding boxes ONLY if it mathematically recognizes the object.<br>
-        • <b>WHY IT'S IMPORTANT:</b> Removes human error. Operator fatigue causes missed cracks in pipes; the AI never sleeps.
-    </div>
-    """, unsafe_allow_html=True)
+    else:
+        cam1, cam2 = st.columns(2)
+        for i, (idx, r) in enumerate(latest_main.head(2).iterrows()):
+            cam = cam1 if i == 0 else cam2
+            cam.markdown(f"""<div style="border: 2px solid #64748b; background: #000; height: 300px; position: relative; border-radius: 12px;"><div style="position: absolute; top: 15px; left: 15px; color: #64748b; font-family: monospace; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px;">NODE: {r['drone_id']} | EDGE-AI STANDBY</div><div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.1); font-size: 80px;">⌖</div></div>""", unsafe_allow_html=True)
+    st.markdown("<div class='info-box'><b>📌 NEURAL AI:</b><br>Uses real Edge-AI inference. Upload images to scan pixels mathematically. Bounding boxes only draw on confirmed anomalies.</div>", unsafe_allow_html=True)
 
-# TAB 5: THERMODYNAMICS
+# TAB 5: THERMODYNAMICS (Static based on sliders)
 with tabs[4]: 
     x = np.linspace(-3, 3, 100); y = np.linspace(-3, 3, 100); X, Y = np.meshgrid(x, y)
     Z = np.exp(-(X**2 + Y**2)) 
@@ -240,31 +240,25 @@ with tabs[4]:
     fig_cont = go.Figure(data=go.Contour(z=Z_smoothed, colorscale='Inferno', contours=dict(showlabels=True)))
     fig_cont.update_layout(title="Thermal Dispersion Plume", paper_bgcolor='rgba(0,0,0,0)', font=dict(color=accent), height=400)
     st.plotly_chart(fig_cont, use_container_width=True)
-    
-    st.markdown("""
-    <div class='info-box'>
-        <b>📌 HOW TO READ THE THERMODYNAMIC PLUME:</b><br>
-        • <b>WHAT IS IT?</b> A contour map showing the Gaussian distribution of leaked gas or expanding heat.<br>
-        • <b>THE COLORS (Inferno Scale):</b> The dark/black outer edges represent safe zones (normal temperature/clean air). The bright white/yellow center represents the origin point of the leak (maximum toxicity/heat).<br>
-        • <b>THE CONCENTRIC RINGS:</b> Similar to a topographic map, each ring represents a boundary of safety. <br>
-        • <b>WHY IT'S USEFUL:</b> Used by hazmat and evacuation teams to establish physical safety perimeters around a compromised industrial site.
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("<div class='info-box'><b>📌 THERMODYNAMIC PLUME:</b><br>Contour map showing Gaussian distribution of leaked gas/heat. Bright center = origin. Outer rings = safety boundaries for evacuation perimeters.</div>", unsafe_allow_html=True)
 
-# TAB 6 & 7: ACOUSTICS & DATA LAKE
+# TAB 6: ACOUSTICS
 with tabs[5]:
     audio_file = st.file_uploader("Upload Drone Audio Log (.wav, .mp3)", type=["wav", "mp3"])
     if audio_file:
         st.audio(audio_file)
         if st.button("Run CNN-LSTM Frequency Analysis"):
             st.error("⚠️ ANOMALY DETECTED: High-Frequency Hissing (Match: Gas Leak Signature - 91%)")
-    st.markdown("<div class='info-box'><b>📌 ACOUSTIC AI:</b><br>Detects high-pressure gas leaks through auditory frequencies before they become visible to thermal cameras. Essential for early-warning in pressurized pipe networks.</div>", unsafe_allow_html=True)
+    st.markdown("<div class='info-box'><b>📌 ACOUSTIC AI:</b><br>Detects high-pressure gas leaks through auditory frequencies before thermal cameras can see them. Essential early-warning system.</div>", unsafe_allow_html=True)
 
+# TAB 7: DATA LAKE (Fragment)
 with tabs[6]: 
-    st.dataframe(df_tel, use_container_width=True)
-    st.markdown("<div class='info-box'><b>📌 DATA LAKE:</b><br>The raw Pandas/Polars dataframe logging every micro-transaction from the swarm. Used by backend engineers for post-incident crash forensics.</div>", unsafe_allow_html=True)
+    @st.fragment(run_every=5)
+    def live_data_lake():
+        if st.session_state.pause_sync: return
+        df_tel = fetch_telemetry()
+        st.dataframe(df_tel, use_container_width=True)
+    live_data_lake()
+    st.markdown("<div class='info-box'><b>📌 DATA LAKE:</b><br>The raw dataframe logging every micro-transaction. Used by backend engineers for crash forensics.</div>", unsafe_allow_html=True)
 
-# --- 7. AUTO-REFRESH (5 SECONDS) ---
-if not pause_sync:
-    time.sleep(5)
-    st.rerun()
+# --- ANT-LAG MAGIC: No st.rerun() or time.sleep() at the bottom! ---
